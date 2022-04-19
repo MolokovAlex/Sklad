@@ -2,16 +2,17 @@
 # lisence: GPL
 # coding: utf-8
 # version 0.0.2 - создаю класс Component и генератор уникального номера
-
+# version 0.0.3 - функции создания резрвного файла
 
 # надо: 
-# - делать копию того файла который открываем и открывать копию, при закрытии файла - обратная замена. Те.в папке будут два файла - исходный и измененный
+# ОК- делать копию того файла который открываем и открывать копию, при закрытии файла - обратная замена. Те.в папке будут два файла - исходный и измененный
 # - считывать файл Иксель
 # - сохранять и считывать в собственном фомате в файл
-# - генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
+# ОК- генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
 
 import win32com.client
 import time
+import shutil
 
 
 class Component:
@@ -65,4 +66,40 @@ def getCode():
     CCode = str(Utime)
     return CCode
 
+def SeparationFileName (nameFile:str) -> list:
+    """
+    функция разделяет строковую переменную имени файла на имя файла и расширение
+    Выход:
+    list_name = [name: str, ext: str]
+    
+    """
+    list_name = []
+    name = ''
+    ext = ''
+    for x in range (len(nameFile)-1,0,-1):
+        if nameFile[x] != ".":
+            ext = nameFile[x] + ext
+        else:
+            x_stop = x
+            break
+    for y in range (0,x_stop,1):
+        name = name + nameFile[y]
+    list_name.append(name)
+    list_name.append(ext)
+    return list_name
+
+def ArchFileCopy(nameFileOrigin:str):
+    """
+    функция делает копию исходного файла, добавляя к имени в конце "V1"
+    """
+    nameOrigin = []
+    nameOrigin = SeparationFileName(nameFileOrigin)
+    archFile = nameOrigin[0] + 'V1' + '.' + nameOrigin[1]
+    shutil.copy2(nameFileOrigin, archFile)
+    return archFile
+
+nameFile = "ex1.xlsx"
 print (getCode())
+print (SeparationFileName(nameFile))
+print (ArchFileCopy(nameFile))
+
