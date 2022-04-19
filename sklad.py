@@ -1,40 +1,68 @@
 # autor: MolokovAlex
 # lisence: GPL
-# version 0.0.1
+# coding: utf-8
+# version 0.0.2 - создаю класс Component и генератор уникального номера
+
+
+# надо: 
+# - делать копию того файла который открываем и открывать копию, при закрытии файла - обратная замена. Те.в папке будут два файла - исходный и измененный
+# - считывать файл Иксель
+# - сохранять и считывать в собственном фомате в файл
+# - генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
 
 import win32com.client
+import time
 
-# создадим COM объект
-Excel = win32com.client.Dispatch("Excel.Application")
 
-# Теперь мы можем работать с помощью объекта Excel мы можем получить доступ ко всем возможностям VBA. Давайте, для начала, откроем любую книгу и выберем активный лист. Это можно сделать так:
-# G:\NO_Work\Python\Sklad\
-wb = Excel.Workbooks.Open(u'G:\\NO_Work\\Python\\Sklad\\ex1.xlsx')
-sheet = wb.ActiveSheet
+class Component:
+    def __init__(self, name, code, 
+                group, sub_group_level1, sub_group_level2, sub_group_level3, sub_group_level4, sub_group_level5, 
+                amount=0, dimencion='шт', articul=''):
+        """ Конструктор класса Component
 
-#получаем значение первой ячейки
-val = sheet.Cells(1,1).value
-print (val)
+        Args:
+        name - наимнование компонента, например "транзистор", "винт М2x20 DIN912 A2"
+        code - уникальный номер компонента, его цифровой отпечаток
+        group - группа верхнего уровня, например "Метизы/крепеж"
+        sub_group_level1 - подгруппа нижнего уровня, например "Винты"
+        sub_group_level2 - подгруппа нижнего уровня, например "М2"
+        sub_group_level3 - подгруппа нижнего уровня, например "DIN"
+        sub_group_level4 - подгруппа нижнего уровня, например "тип стали"
+        sub_group_level5 - подгруппа нижнего уровня, например "" ???? на всякий случай
+        amount - количество на складе в единицах измерения
+        dimencion - единица измерения, например "шт", "комлект", "л"
+        articul -  артикул компонента
+        """
+        self.name = name        
+        self.code = code
+        self.group = group
+        self.sub_group_level1 = sub_group_level1 
+        self.sub_group_level2 = sub_group_level2 
+        self.sub_group_level3 = sub_group_level3 
+        self.sub_group_level4 = sub_group_level4 
+        self.sub_group_level5 = sub_group_level5 
+        self.dimencion = dimencion
+        self.amount = amount
+        self.articul = articul
 
-#получаем значения цепочки A1:A2
-vals = [r[0].value for r in sheet.Range("A1:A2")]
-print(vals)
+    def move(self):
+        """
+        пока не знаю что здесь будет 
+        FIXED
+        """
+        return None
 
-#записываем значение в определенную ячейку
-sheet.Cells(1,2).value = val
+def getCode():
+    """генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
+    генерация на основе числа секунд, которые прошли с начала Unix-эпохи, то есть с 00:00:00 UTC 1.01.1979
+    Выход
+    Ccode -  тип int,  число увелививающееся на 1 каждые 100 мс
+    """
+    CCode = ''
+    Utime = time.time()
+    #  ограничим число, чтобы оно не было таким большим
+    Utime = int(round((Utime-1640000000),1)*10)
+    CCode = str(Utime)
+    return CCode
 
-#записываем последовательность
-# переменная i, которая инициализируется не 0, как принято python, а 1. Это связано с тем, что мы работаем с индексами ячеек как из VBA, а там нумерация начинается не с 0, а с 1.
-i = 1
-for rec in vals:
-    sheet.Cells(i,3).value = rec
-    i = i + 1
-
-#сохраняем рабочую книгу
-wb.Save()
-
-#закрываем ее
-wb.Close()
-
-#закрываем COM объект
-Excel.Quit()
+print (getCode())
