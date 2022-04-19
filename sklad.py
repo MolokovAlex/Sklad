@@ -4,6 +4,7 @@
 # version 0.0.2 - создаю класс Component и генератор уникального номера
 # version 0.0.3 - функции создания резрвного файла
 # version 0.0.4 - функции импорта/экспорта в pickle файл
+# version 0.0.5 - переброска части функций и классов в модули и функции импорта/экспорта файл XLSX
 
 # надо: 
 # ОК- делать копию того файла который открываем и открывать копию, при закрытии файла - обратная замена. Те.в папке будут два файла - исходный и измененный
@@ -11,65 +12,15 @@
 # - сохранять и считывать в собственном фомате в файл
 # ОК- генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
 
-from re import X
+# from re import X
 import win32com.client
-import time
+import string
 import shutil
 import pickle
 import sys
 import os
+import DBClassModule
 
-class Component:
-    def __init__(self, name, code, 
-                group='', sub_group_level1='', sub_group_level2='', sub_group_level3='', sub_group_level4='', sub_group_level5='', 
-                amount=0, dimencion='шт', articul=''):
-        """ Конструктор класса Component
-
-        Args:
-        name - наимнование компонента, например "транзистор", "винт М2x20 DIN912 A2"
-        code - уникальный номер компонента, его цифровой отпечаток
-        group - группа верхнего уровня, например "Метизы/крепеж"
-        sub_group_level1 - подгруппа нижнего уровня, например "Винты"
-        sub_group_level2 - подгруппа нижнего уровня, например "М2"
-        sub_group_level3 - подгруппа нижнего уровня, например "DIN"
-        sub_group_level4 - подгруппа нижнего уровня, например "тип стали"
-        sub_group_level5 - подгруппа нижнего уровня, например "" ???? на всякий случай
-        amount - количество на складе в единицах измерения
-        dimencion - единица измерения, например "шт", "комлект", "л"
-        articul -  артикул компонента
-        """
-        self.name = name        
-        self.code = code
-        self.group = group
-        self.sub_group_level1 = sub_group_level1 
-        self.sub_group_level2 = sub_group_level2 
-        self.sub_group_level3 = sub_group_level3 
-        self.sub_group_level4 = sub_group_level4 
-        self.sub_group_level5 = sub_group_level5 
-        self.dimencion = dimencion
-        self.amount = amount
-        self.articul = articul
-
-    def move(self):
-        """
-        пока не знаю что здесь будет 
-        FIXED
-        """
-        return None
-
-def getCode():
-    """генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
-    генерация на основе числа секунд, которые прошли с начала Unix-эпохи, то есть с 00:00:00 UTC 1.01.1979
-    Выход
-    Ccode -  тип int,  число увелививающееся на 1 каждые 100 мс
-    """
-    CCode = ''
-    time.sleep(0.2)         # задержка генерации кода в 0.2 сек
-    Utime = time.time()
-    #  ограничим число, чтобы оно не было таким большим
-    Utime = int(round((Utime-1640000000),1)*10)
-    CCode = str(Utime)
-    return CCode
 
 def SeparationFileName (nameFile:str) -> list:
     """
@@ -120,7 +71,103 @@ def SaveDBComponentInFileXLS():
     """
     функция экспорта базы  DBComponent в файл xls
     """
+    global DBComponent
+
+    # создадим COM объект
+    Excel = win32com.client.Dispatch("Excel.Application")
+
+    # Теперь мы можем работать с помощью объекта Excel мы можем получить доступ ко всем возможностям VBA. Давайте, для начала, откроем любую книгу и выберем активный лист. Это можно сделать так:
+    # G:\NO_Work\Python\Sklad\
+    wb = Excel.Workbooks.Open(u'G:\\NO_Work\\Python\\Sklad\\ex1.xlsx')
+    sheet = wb.ActiveSheet
+
+    #получаем значение первой ячейки
+    #val = sheet.Cells(1,1).value
+    #print (val)
+
+    #получаем значения цепочки A1:A2
+    #vals = [r[0].value for r in sheet.Range("A1:A2")]
+    #print(vals)
+
+    #записываем значение в определенную ячейку
+    #sheet.Cells(1,2).value = val
+
+    #записываем последовательность
+    # переменная i, которая инициализируется не 0, как принято python, а 1. Это связано с тем, что мы работаем с индексами ячеек как из VBA, а там нумерация начинается не с 0, а с 1.
+    #i = 1
+    #for rec in vals:
+    #    sheet.Cells(i,3).value = rec
+    #    i = i + 1
+    for i in range (1, len (DBComponent)-1, 1):
+        # у Cells( строка, столбец)
+        sheet.Cells(i, 1).value = DBComponent[i].code
+        sheet.Cells(i, 1).Font.Color = 0xFF0000
+        sheet.Cells(i, 2).value = DBComponent[i].name
+        sheet.Cells(i, 2).Font.Color = 0x00FF00
+
+    #сохраняем рабочую книгу
+    wb.Save()
+    #закрываем ее
+    wb.Close()
+    #закрываем COM объект
+    Excel.Quit()
+
+
+
+    # with open(fileName) as dbfile:
+    #     dbfile = open(fileName, "wb")
+    #     pickle.dump(DBComponent, dbfile, 4)
+    # dbfile.close()
+    print ("OK file save XLS")
+
     return None
+
+def AnalizPustoInStr(instring: str) -> bool:
+    Pusto = True
+    #Instring.replace(" ", "")
+    #instring.translate({ord(c): None for c in string.whitespace})
+    if (instring == '' ) | (instring == '\n') | (instring == " ") | (instring == None):
+        Pusto = True
+    else:
+        Pusto = False
+
+    return Pusto
+
+def LoadDBComponentFromFileXLS():
+    """
+    функция импорта базы  DBComponent из файла xls
+    """
+    global DBComponent
+
+    # создадим COM объект
+    Excel = win32com.client.Dispatch("Excel.Application")
+
+    # Теперь мы можем работать с помощью объекта Excel мы можем получить доступ ко всем возможностям VBA. Давайте, для начала, откроем любую книгу и выберем активный лист. Это можно сделать так:
+    # G:\NO_Work\Python\Sklad\
+    wb = Excel.Workbooks.Open(u'G:\\NO_Work\\Python\\Sklad\\ex2.xlsx')
+    sheet = wb.ActiveSheet
+    
+    for indexInFile in range (1, 80, 1):
+        # у Cells( строка, столбец)
+        #print (sheet.Cells(indexInFile, 1).value)
+        if AnalizPustoInStr(sheet.Cells(indexInFile, 1).value) == False:
+            nam = sheet.Cells(indexInFile, 1).value
+            dbc = DBClassModule.Component(nam, DBClassModule.getCode())
+            DBComponent.append(dbc)
+
+        
+
+    #сохраняем рабочую книгу
+    #wb.Save()
+    #закрываем ее
+    wb.Close()
+    #закрываем COM объект
+    Excel.Quit()
+    print ("OK file load XLS in DBComponent")
+
+    return None
+
+
 
 def SaveDBComponentInFilePickle(fileName: str):
     """
@@ -134,7 +181,7 @@ def SaveDBComponentInFilePickle(fileName: str):
     print ("OK file save")
     return None
 
-def LoadDBComponentInFilePickle(fileName: str):
+def LoadDBComponentFromFilePickle(fileName: str):
     """
     функция импорта базы  DBComponent из файла упаковкой pickle
     """
@@ -147,30 +194,33 @@ def LoadDBComponentInFilePickle(fileName: str):
     return None
 
 
-nameFile = "ex1.xlsx"
-fileNamePickle = 'DBComponents.db'
+
+# nameFile = "ex1.xlsx"
+# fileNamePickle = 'DBComponents.db'
 DBComponent = []                # БД по наименованию компонентов
 
-print (ArchFileCopy(nameFile))
 
 # тестовое наполнение DBComponent
-baseNameComponent = 'транзистор'
-for x in range (0, 10, 1):
-    nameComponent = baseNameComponent + str(x)
-    obj = Component(nameComponent, getCode())
-    DBComponent.append(obj)
-for x in range (0, 10, 1):
-    print (DBComponent[x].code + '  ' + DBComponent[x].name)
-
-#os.chdir(r'G:\NO_Work\Python\Sklad')       # change dir
-#print(os.getcwd())          # print current directory
-
-SaveDBComponentInFilePickle(fileNamePickle)
+# baseNameComponent = 'транзистор'
+# for x in range (0, 10, 1):
+#     nameComponent = baseNameComponent + str(x)
+#     obj = DBClassModule.Component(nameComponent, DBClassModule.getCode())
+#     DBComponent.append(obj)
+# for x in range (0, 10, 1):
+#     print (DBComponent[x].code + '  ' + DBComponent[x].name)
 
 
-DBComponent = []
+#SaveDBComponentInFilePickle(fileNamePickle)
+#DBComponent = []
+LoadDBComponentFromFileXLS()
+# for x in range (1, 10, 1):
+#     print (str(DBComponent[x].code) + '  ' + str(DBComponent[x].name))
 
-LoadDBComponentInFilePickle(fileNamePickle)
+SaveDBComponentInFileXLS()
 
-for x in range (0, 10, 1):
-    print (DBComponent[x].code + '  ' + DBComponent[x].name)
+#DBComponent = []
+
+#LoadDBComponentInFilePickle(fileNamePickle)
+
+# for x in range (0, 10, 1):
+#     print (DBComponent[x].code + '  ' + DBComponent[x].name)
