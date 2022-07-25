@@ -5,222 +5,167 @@
 # version 0.0.3 - функции создания резрвного файла
 # version 0.0.4 - функции импорта/экспорта в pickle файл
 # version 0.0.5 - переброска части функций и классов в модули и функции импорта/экспорта файл XLSX
+# version 0.1.0 - слияние графических примитиввных окон и backend-ом обработки файла БД
+#
+#  Редактирование компонента:
+# - раюотают все кнопки на дереве компоынентов 
+# - работают кнопки на дереве Групп : Удалить, Переименовать
+# ОК - в кнопке Добавить подумать над указанием lvl03, lvl04  и т.п.
+# OK - перейти на pd.concat вместо append
+# ОК- сделать кнопку Переместить в дереве Групп
+#  - сделать рефакторинг кода, добавить комментарии
+# OK - сделать сохранение DatFrame в файл Pickle и при запуске программы загружать DataFrame из этого файла
+# - добавить "умную процедуру импорта"
+
+# 240622 - доработан модуль импорта- -  сам выискиает уровни в листе книги и вычисляет нахождение названия групп
+# 020722 - доработал модуль GUI - кнопки-картинки, занимают меньше места, при выделении компонента, его поля заполняют данные на форме
+# 040722 - добавляем логику GUI для расхода компонентов и создаем структуру БД расхода
+# 080722 - создаем модуль Экспрта
+# 080722 - создаем тестовый набор данных
+# 110722 - проверяем тетовый набор на расходе, корректируя проблемы
+# 140722 - доделал модуль расхода с записью и в БД спецификаций и сделал вычитаеие из БД компонентов
+# 160722 - доделал модуль прихода с записью в БД компонентов  и сделал сложение в БД компонентов
+# 180722 - доделал модуль экспорта
 
 # надо: 
 # ОК- делать копию того файла который открываем и открывать копию, при закрытии файла - обратная замена. Те.в папке будут два файла - исходный и измененный
 # - считывать файл Иксель
 # - сохранять и считывать в собственном фомате в файл
 # ОК- генерировать уникальный номер компонента в зависимости от даты, времени до милисекунды
-
-# from re import X
-import win32com.client
-import string
-import shutil
-import pickle
-import sys
-import os
-import DBClassModule
+#  - сделать защиту от дурака при импорте файлов в БД
+# - проверить при запуске программы существует ли файл БД? елси нет - оповесить пользователя что его нет и будет создан пустой
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # сделать защиту от дурака:
+    # - появление в таблицах или БД одинаковых наименований и одинаковых кодов
 
 
-def SeparationFileName (nameFile:str) -> list:
-    """
-    функция разделяет строковую переменную имени файла на имя файла и расширение
-    Выход:
-    list_name = [name: str, ext: str]
+import os.path as ospath
+# import sqlite3 as sqlite
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import Menu
+import tkinter.messagebox as mb
+import modulAppGUI as mag
+import skladConfig as scfg
+import moduleDBClass as mdbc
+import moduleImport as mi
+import moduleExport as me
+# import moduleSQLite as msql
+import pandas as pd
+import numpy as np
+
+
+
+
+
+
+
+# глобальные переменные
+DBComponent = []
+DBUnits =[]
+
+flag_createDBbackup = False # флаг результата создания резервной БД
+flag_CreateTableDB = False  # флаг создания/обновления таблицы в памяти
+flag_copyTableInMemory = False      # флаг копирования таблицы из файла в память
+
+
+
+sql_create_tableDBGroupComponent = """ CREATE TABLE IF NOT EXISTS DBGroupComponent (
+        id_code_group INTEGER PRIMARY KEY,
+        name_group TEXT);
+        """
+sql_create_tableDBComponent = """ CREATE TABLE IF NOT EXISTS DBComponent (
+        id_code_component INTEGER PRIMARY KEY,
+        name_component TEXT, 
+        code_group0 INTEGER, 
+        code_group1 INTEGER,
+        code_group2 INTEGER,
+        code_group3 INTEGER,
+        code_group4 INTEGER,
+        code_group5 INTEGER,
+        amount INTEGER,
+        min_rezerve INTEGER,
+        code_units INTEGER, 
+        articul TEXT
+        );
+        """
+sql_create_tableDBUnits = """ CREATE TABLE IF NOT EXISTS DBUnits (
+        id_code_units INTEGER PRIMARY KEY,
+        name_units TEXT );
+        """
     
-    """
-    list_name = []
-    name = ''
-    ext = ''
-    for x in range (len(nameFile)-1,0,-1):      #  поиск расширения
-        if nameFile[x] != ".":
-            ext = nameFile[x] + ext
-        else:
-            x_stop = x
-            break
-    for y in range (0,x_stop,1):                # поиск имени
-        name = name + nameFile[y]
-    list_name.append(name)
-    list_name.append(ext)
-    return list_name
-
-def ArchFileCopy(nameFileOrigin:str)-> str:
-    """
-    функция делает копию исходного файла, добавляя к имени в конце "V1"
-    вход:
-    nameFileOrigin:str - например, "test.xlsx"
-    выход:
-    создание копии и 
-    nameArchFile - имя созданного файла, например "testV1.xlsx"
-    """
-    nameOrigin = []
-    nameOrigin = SeparationFileName(nameFileOrigin)
-    nameArchFile = nameOrigin[0] + 'V1' + '.' + nameOrigin[1]
-    shutil.copy2(nameFileOrigin, nameArchFile)
-    return nameArchFile
-
-def FillingDBComponent():
-    """
-     функция наполнения базы данных класса Component
-    """
+sql_delete_data_in_tableDBGroupComponent = 'DELETE FROM DBGroupComponent WHERE code_group > 0;'
 
 
-    return None
+def main():
+    # создаем графический оконный интерфейс
+    app = mag.App()
+    app.title("Программа ведения склада")
 
-def SaveDBComponentInFileXLS():
-    """
-    функция экспорта базы  DBComponent в файл xls
-    """
-    global DBComponent
-
-    # создадим COM объект
-    Excel = win32com.client.Dispatch("Excel.Application")
-
-    # Теперь мы можем работать с помощью объекта Excel мы можем получить доступ ко всем возможностям VBA. Давайте, для начала, откроем любую книгу и выберем активный лист. Это можно сделать так:
-    # G:\NO_Work\Python\Sklad\
-    wb = Excel.Workbooks.Open(u'G:\\NO_Work\\Python\\Sklad\\ex1.xlsx')
-    sheet = wb.ActiveSheet
-
-    #получаем значение первой ячейки
-    #val = sheet.Cells(1,1).value
-    #print (val)
-
-    #получаем значения цепочки A1:A2
-    #vals = [r[0].value for r in sheet.Range("A1:A2")]
-    #print(vals)
-
-    #записываем значение в определенную ячейку
-    #sheet.Cells(1,2).value = val
-
-    #записываем последовательность
-    # переменная i, которая инициализируется не 0, как принято python, а 1. Это связано с тем, что мы работаем с индексами ячеек как из VBA, а там нумерация начинается не с 0, а с 1.
-    #i = 1
-    #for rec in vals:
-    #    sheet.Cells(i,3).value = rec
-    #    i = i + 1
-    for i in range (1, len (DBComponent)-1, 1):
-        # у Cells( строка, столбец)
-        sheet.Cells(i, 1).value = DBComponent[i].code
-        sheet.Cells(i, 1).Font.Color = 0xFF0000
-        sheet.Cells(i, 2).value = DBComponent[i].name
-        sheet.Cells(i, 2).Font.Color = 0x00FF00
-
-    #сохраняем рабочую книгу
-    wb.Save()
-    #закрываем ее
-    wb.Close()
-    #закрываем COM объект
-    Excel.Quit()
-
-
-
-    # with open(fileName) as dbfile:
-    #     dbfile = open(fileName, "wb")
-    #     pickle.dump(DBComponent, dbfile, 4)
-    # dbfile.close()
-    print ("OK file save XLS")
-
-    return None
-
-def AnalizPustoInStr(instring: str) -> bool:
-    Pusto = True
-    #Instring.replace(" ", "")
-    #instring.translate({ord(c): None for c in string.whitespace})
-    if (instring == '' ) | (instring == '\n') | (instring == " ") | (instring == None):
-        Pusto = True
+    # загрузим DataFrame БД склада компоненов из файла
+    if ospath.isfile(scfg.nameFile_DBC_pickle):
+        mi.Load_DataFrameDBC_From_PickleFile() 
+        print('Файл БД склада компоненов pickle найден')
     else:
-        Pusto = False
+        print('Файл БД склада компоненов pickle НЕнайден !!!!!!!!!!!!!!!!!!!!!!')
+        # new_row = {'name':'Sklad', 'id_code_lvl': 'lvl00', 'id_code_item': '0', 'id_code_parent':'0', 'amount':0} #append row to the dataframe 
+        # scfg.df1 = pd.DataFrame(new_row , index=[0])
+        a=scfg.demo_DBС_1
+        scfg.df_DBC = pd.DataFrame(data=scfg.demo_DBС_1)
 
-    return Pusto
 
-def LoadDBComponentFromFileXLS():
-    """
-    функция импорта базы  DBComponent из файла xls
-    """
-    global DBComponent
+    # загрузим DataFrame БД спецификаций из файла
+    if ospath.isfile(scfg.nameFile_DBS_pickle):
+        mi.Load_DataFrameDBS_From_PickleFile() 
+        print('Файл БД спецификаций pickle найден')
+    else:
+        print('Файл БД спецификаций pickle НЕнайден !!!!!!!!!!!!!!!!!!!!!!')
+         # заполним демо-данными
+        scfg.df_DBS = pd.DataFrame(data=scfg.demo_DBS_1)
+        df22 = pd.DataFrame(data=scfg.demo_DBS_2)
+        scfg.df_DBS = pd.concat([scfg.df_DBS, df22])
+        #  переиндексируем DataFrame
+        scfg.df_DBS = scfg.df_DBS.reset_index(drop=True)
 
-    # создадим COM объект
-    Excel = win32com.client.Dispatch("Excel.Application")
+    # загрузим DataFrame БД приходов из файла
+    if ospath.isfile(scfg.nameFile_DBI_pickle):
+        mi.Load_DataFrameDBI_From_PickleFile() 
+        print('Файл БД приходов pickle найден')
+    else:
+        print('Файл БД приходов pickle НЕнайден !!!!!!!!!!!!!!!!!!!!!!')
+        # заполним демо-данными
+        scfg.df_DBI = pd.DataFrame(data=scfg.demo_DBI_1) 
 
-    # Теперь мы можем работать с помощью объекта Excel мы можем получить доступ ко всем возможностям VBA. Давайте, для начала, откроем любую книгу и выберем активный лист. Это можно сделать так:
-    # G:\NO_Work\Python\Sklad\
-    wb = Excel.Workbooks.Open(u'G:\\NO_Work\\Python\\Sklad\\ex2.xlsx')
-    sheet = wb.ActiveSheet
+
+
+    # загрузим DataFrame БД расходов из файла
+    if ospath.isfile(scfg.nameFile_DBE_pickle):
+        mi.Load_DataFrameDBE_From_PickleFile() 
+        print('Файл БД расходов pickle найден')
+    else:
+        print('Файл БД расходов pickle НЕнайден !!!!!!!!!!!!!!!!!!!!!!')
+        # заполним демо-данными
+        scfg.df_DBE = pd.DataFrame(data=scfg.demo_DBE_1)   
+
+    # загрузим DataFrame БД ед измерения из файла
+    if ospath.isfile(scfg.nameFile_DBCU_pickle):
+        mi.Load_DataFrameDBCU_From_PickleFile() 
+        print('Файл БД ед измерения pickle найден')
+    else:
+        print('Файл БД ед измерения pickle НЕнайден !!!!!!!!!!!!!!!!!!!!!!')
+        # заполним демо-данными
+        scfg.df_DBCU = pd.DataFrame(data=scfg.demo_DBCU_1)  
+    # a = scfg.df_DBCU 
     
-    for indexInFile in range (1, 80, 1):
-        # у Cells( строка, столбец)
-        #print (sheet.Cells(indexInFile, 1).value)
-        if AnalizPustoInStr(sheet.Cells(indexInFile, 1).value) == False:
-            nam = sheet.Cells(indexInFile, 1).value
-            dbc = DBClassModule.Component(nam, DBClassModule.getCode())
-            DBComponent.append(dbc)
+    app.createMainMenu()            # теперь можно работать дальше - создаем главное меню
 
-        
-
-    #сохраняем рабочую книгу
-    #wb.Save()
-    #закрываем ее
-    wb.Close()
-    #закрываем COM объект
-    Excel.Quit()
-    print ("OK file load XLS in DBComponent")
+    app.mainloop()
 
     return None
 
 
-
-def SaveDBComponentInFilePickle(fileName: str):
-    """
-    функция экспорта базы  DBComponent в файл упаковкой pickle
-    """
-    global DBComponent
-    with open(fileName) as dbfile:
-        dbfile = open(fileName, "wb")
-        pickle.dump(DBComponent, dbfile, 4)
-    dbfile.close()
-    print ("OK file save")
-    return None
-
-def LoadDBComponentFromFilePickle(fileName: str):
-    """
-    функция импорта базы  DBComponent из файла упаковкой pickle
-    """
-    global DBComponent
-    with open(fileName) as dbfile:
-        dbfile = open(fileName, "rb")
-        DBComponent = pickle.load(dbfile)
-    dbfile.close()
-    print ("OK file load")
-    return None
+if __name__ == "__main__":
+    main()
+    
 
 
-
-# nameFile = "ex1.xlsx"
-# fileNamePickle = 'DBComponents.db'
-DBComponent = []                # БД по наименованию компонентов
-
-
-# тестовое наполнение DBComponent
-# baseNameComponent = 'транзистор'
-# for x in range (0, 10, 1):
-#     nameComponent = baseNameComponent + str(x)
-#     obj = DBClassModule.Component(nameComponent, DBClassModule.getCode())
-#     DBComponent.append(obj)
-# for x in range (0, 10, 1):
-#     print (DBComponent[x].code + '  ' + DBComponent[x].name)
-
-
-#SaveDBComponentInFilePickle(fileNamePickle)
-#DBComponent = []
-LoadDBComponentFromFileXLS()
-# for x in range (1, 10, 1):
-#     print (str(DBComponent[x].code) + '  ' + str(DBComponent[x].name))
-
-SaveDBComponentInFileXLS()
-
-#DBComponent = []
-
-#LoadDBComponentInFilePickle(fileNamePickle)
-
-# for x in range (0, 10, 1):
-#     print (DBComponent[x].code + '  ' + DBComponent[x].name)
