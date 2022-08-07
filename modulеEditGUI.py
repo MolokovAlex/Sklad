@@ -37,13 +37,13 @@ class WindowEditComponent(tk.Toplevel):
         super().__init__(parent)
         # self.geometry("1100x700")
         self.widthscreen = self.winfo_screenwidth()-30    # размеры экрана
-        self.heigthscreen = self.winfo_screenheight()-30
+        self.heigthscreen = self.winfo_screenheight()-100
         self.geometry('{}x{}+5+5'.format(self.widthscreen, self.heigthscreen))
 
-        self.ImageDelete = tk.PhotoImage(file = os.path.abspath('images\delete1.png'))
-        self.ImageRemove = tk.PhotoImage(file = os.path.abspath('images\iemove1.png'))
-        self.ImageRename = tk.PhotoImage(file = os.path.abspath('images\edit1.png'))
-        self.ImageEdit = tk.PhotoImage(file = os.path.abspath('images\edit3.png'))
+        self.ImageDelete = tk.PhotoImage(file = scfg.icon_button_delete)
+        self.ImageRemove = tk.PhotoImage(file = scfg.icon_button_remove)
+        self.ImageRename = tk.PhotoImage(file = scfg.icon_button_rename)
+        self.ImageEdit =   tk.PhotoImage(file = scfg.icon_button_edit )
 
         #self.protocol("WM_DELETE_WINDOW", self.confirm_delete)
         opts = { 'ipadx': 3, 'ipady': 3 , 'sticky': 'nswe' }
@@ -182,7 +182,7 @@ class WindowEditComponent(tk.Toplevel):
         self.treeGroup.grid(row=0, column=1, rowspan=4, **opts)
         mag.Setting_TreeView(self.treeGroup, form = 'short')
         self.ysb = ttk.Scrollbar(self.frame_TreeGroup, orient=tk.VERTICAL, command=self.treeGroup.yview)
-        self.treeGroup.configure(yscroll=self.ysb.set)
+        self.treeGroup.configure(yscroll=self.ysb.set, height= 33)
         self.ysb.grid(row=0, column=2, rowspan=4, **opts)
         self.treeGroup.bind('<<TreeviewSelect>>', lambda e, mW=modeWindow, vW=viewDB: self.on_select_TreeGroup(e, modeWindow = mW, viewDB = vW))
 
@@ -191,7 +191,7 @@ class WindowEditComponent(tk.Toplevel):
         mag.Setting_TreeView(self.tree2, form = 'full')
         self.ysb2 = ttk.Scrollbar(self.frame_TreeComponents, orient=tk.VERTICAL, command=self.tree2.yview)
         self.ysb2.grid(row=0, column=2, rowspan=4, **opts)
-        self.tree2.configure(yscroll=self.ysb2.set)
+        self.tree2.configure(yscroll=self.ysb2.set, height= 33)
         self.tree2.bind('<<TreeviewSelect>>', lambda e, mW=modeWindow, vW=viewDB: self.on_select_TreeComponents(e, modeWindow = mW, viewDB = vW))
     
         self.id_code_itemElement = 0

@@ -81,7 +81,7 @@ class Window_Import_OR_Remove(tk.Toplevel):
     def press_Button_Import(self, viewWindow):
         if viewWindow == 'DBC':   dataFrame_in = scfg.df_DBC
         elif viewWindow == 'DBS': dataFrame_in = scfg.df_DBS
-        Load_DBGroup_From_XLS_pandas(scfg.nameFile_pu)
+        Load_DBGroup_From_XLS_pandas(scfg.nameFile_importDBC_excel)
         mag.viewTreeGroup(self.treeGroup, dataFrame_in)       # отобразим данные из памяти DBGroup в Tree
         return None
 
@@ -127,7 +127,7 @@ def import_Group_From_XLS_in_memory(nameFile_DBf, nameFile_DBgroup_import):
     
     # -------------------- считаем из XLS данные -------------------------------------------------------
     if foolproofDBGroupXLSX():  # пржд чем загружать данные - проанализирум файл на наличие ошибок в файле.
-        DBGroup_import = Load_DBGroup_From_XLS_pandas(scfg.nameFile_pu)     # создаем загрузку в базу DBGroup_import из файла xls
+        DBGroup_import = Load_DBGroup_From_XLS_pandas(scfg.nameFile_importDBC_excel)     # создаем загрузку в базу DBGroup_import из файла xls
         # DBGroup_import = Load_DBGroup_From_XLS(nameFile_DBgroup_import)     # создаем загрузку в базу DBGroup_import из файла xls
         print ('БД в файле XLSX загружена в список DBGroup_import')
 

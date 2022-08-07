@@ -7,15 +7,17 @@
 # файл хранения глобальных переменных и настроечных параметров
 
 
-nameFile_DBgroup_import = 'sklad_group.xlsx'
-nameFile_DBcomponent_import =  'sklad_component.xlsx'
-nameFile_DBunits_import =  'sklad_units.xlsx'
-nameFile_DBbackUp = 'DBbackup.db'
+import os
+
+# nameFile_DBgroup_import = 'sklad_group.xlsx'
+# nameFile_DBcomponent_import =  'sklad_component.xlsx'
+# nameFile_DBunits_import =  'sklad_units.xlsx'
+# nameFile_DBbackUp = 'DBbackup.db'
 nameFile_DB = 'DBsklad.db'
 
 
-nameFile_pu = 'sklad_pu.xlsx'
-nameFile_out = 'sklad_pu_out.xlsx'
+# nameFile_pu = 'sklad_pu.xlsx'
+# nameFile_out = 'sklad_pu_out.xlsx'
 
 
 
@@ -27,27 +29,31 @@ nameFile_out = 'sklad_pu_out.xlsx'
 # файл всех БД в экспортте
 nameFile_DB_export_excel = 'DB_export_Sklad.xlsx'
 
+# расположение картинок на кнопках
+icon_button_delete = os.path.abspath('icon\delete1.png')
+icon_button_remove = os.path.abspath('icon\iemove1.png')
+icon_button_rename = os.path.abspath('icon\edit1.png')
+icon_button_edit = os.path.abspath('icon\edit3.png')
+
 # -------------------------------------------------------------------------------------------------------------------------------------
 # --------------- БД склада компонентов --------------------------
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 # файл БД склада компоненов в формате Pickle для загрузки в DataFrame Pandas
-nameFile_DBC_pickle = 'DBCsklad.pkl'
+nameFile_DBC_pickle = os.path.abspath('DB\DBCsklad.pkl')
 # файл БД склада компоненов в формате XLXS для визуального контроля
-nameFile_DBC_excel = 'DBCsklad.xlsx'
+nameFile_DBC_excel = os.path.abspath('DB\DBCsklad.xlsx')
 # файл импорта DBC
-nameFile_importDBC_excel = 'DBC_import_Sklad.xlsx'
+nameFile_importDBC_excel = os.path.abspath('Import\DBC_import_Sklad.xlsx')
 # файлы экспорта DBC
-nameFile_exportDBC_pickle = 'DBC_export_Sklad.pkl'
-nameFile_exportDBC_excel = 'DBC_export_Sklad.xlsx'
-
+nameFile_exportDBC_pickle = os.path.abspath('Export\DBC_export_Sklad.pkl')
+nameFile_exportDBC_excel = os.path.abspath('Export\DBC_export_Sklad.xlsx')
 
 # максимальное количество уровней групп в БД склада компонентов
 MAX_LEVEL_GROUP = 10
 
 # объект типа DataFrame содержащий БД склада компоненов
 df_DBC = []
-# df_DB_Components = []
 
 # наименования полей (столбцов) БД компонентов
 columns_DB_components = [
@@ -145,15 +151,15 @@ demo_DBС_1 = {
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 # файл БД расхода  компоненов в формате Pickle для загрузки в DataFrame Pandas
-nameFile_DBI_pickle = 'DBIsklad.pkl'
+nameFile_DBI_pickle = os.path.abspath('DB\DBIsklad.pkl')
 # файл БД расхода  компоненов в формате XLXS для визуального контроля
-nameFile_DBI_excel = 'DBIsklad.xlsx'
+nameFile_DBI_excel = os.path.abspath('DB\DBIsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBI_excel = 'DBI_import_Sklad.xlsx'
+nameFile_importDBI_excel = os.path.abspath('Import\DBI_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBI_pickle = 'DBI_export_Sklad.pkl'
-nameFile_exportDBI_excel = 'DBI_export_Sklad.xlsx'
+nameFile_exportDBI_pickle = os.path.abspath('Export\DBI_export_Sklad.pkl')
+nameFile_exportDBI_excel = os.path.abspath('Export\DBI_export_Sklad.xlsx')
 
 
 df_DBI = []
@@ -206,15 +212,15 @@ demo_DBI_1 = {
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 # файл БД расхода  компоненов в формате Pickle для загрузки в DataFrame Pandas
-nameFile_DBE_pickle = 'DBEsklad.pkl'
+nameFile_DBE_pickle = os.path.abspath('DB\DBEsklad.pkl')
 # файл БД расхода  компоненов в формате XLXS для визуального контроля
-nameFile_DBE_excel = 'DBEsklad.xlsx'
+nameFile_DBE_excel = os.path.abspath('DB\DBEsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBE_excel = 'DBE_import_Sklad.xlsx'
+nameFile_importDBE_excel = os.path.abspath('Import\DBE_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBE_pickle = 'DBE_export_Sklad.pkl'
-nameFile_exportDBE_excel = 'DBE_export_Sklad.xlsx'
+nameFile_exportDBE_pickle = os.path.abspath('Export\DBE_export_Sklad.pkl')
+nameFile_exportDBE_excel = os.path.abspath('Export\DBE_export_Sklad.xlsx')
 
 
 df_DBE = []
@@ -278,15 +284,15 @@ demo_DBE_1 = {
 # --------------- БД единиц измерения 'code_units' ------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------------------------------
 # файл БД расхода  компоненов в формате Pickle для загрузки в DataFrame Pandas
-nameFile_DBCU_pickle = 'DBCUsklad.pkl'
+nameFile_DBCU_pickle = os.path.abspath('DB\DBCUsklad.pkl')
 # файл БД расхода  компоненов в формате XLXS для визуального контроля
-nameFile_DBCU_excel = 'DBCUsklad.xlsx'
+nameFile_DBCU_excel = os.path.abspath('DB\DBCUsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBCU_excel = 'DBCU_import_Sklad.xlsx'
+nameFile_importDBCU_excel = os.path.abspath('Import\DBCU_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBCU_pickle = 'DBCU_export_Sklad.pkl'
-nameFile_exportDBCU_excel = 'DBCU_export_Sklad.xlsx'
+nameFile_exportDBCU_pickle = os.path.abspath('Export\DBCU_export_Sklad.pkl')
+nameFile_exportDBCU_excel = os.path.abspath('Export\DBCU_export_Sklad.xlsx')
 
 #'code_units'
 df_DBCU = []
@@ -323,17 +329,17 @@ demo_DBCU_1  = {
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 # файл БД спецификаций в формате Pickle для загрузки в DataFrame Pandas
-nameFile_DBS_pickle = 'DBSpec.pkl'
+nameFile_DBS_pickle = os.path.abspath('DB\DBSpec.pkl')
 # файл БД спецификаций в формате XLXS для визуального контроля
-nameFile_DBS_excel = 'DBSpec.xlsx'
+nameFile_DBS_excel = os.path.abspath('DB\DBSpec.xlsx')
 # файл импорта спецификаций для загрузки в DataFrame Pandas
 # nameFile_importDBS_excel = 'importDBSpec.xlsx'
 
 # файл импорта DBE
-nameFile_importDBS_excel = 'DBS_import_Sklad.xlsx'
+nameFile_importDBS_excel = os.path.abspath('Import\DBS_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBS_pickle = 'DBS_export_Sklad.pkl'
-nameFile_exportDBS_excel = 'DBS_export_Sklad.xlsx'
+nameFile_exportDBS_pickle = os.path.abspath('Export\DBS_export_Sklad.pkl')
+nameFile_exportDBS_excel = os.path.abspath('Export\DBS_export_Sklad.xlsx')
 
 # объект типа DataFrame содержащий БД спецификаций
 df_DBS = []

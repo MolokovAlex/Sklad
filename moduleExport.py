@@ -56,7 +56,7 @@ class WindowExport(tk.Toplevel):
         self.cbExpDBE.grid(row=2, column=0, columnspan=2, **opts)
         self.cbExpDBCU.grid(row=3, column=0, columnspan=2, **opts)
 
-        self.btn_Remove = tk.Button(master=self, height=3, text="Пуск ракет на Америку", command=self.exportDB)
+        self.btn_Remove = tk.Button(master=self, height=3, text="Пуск ракет на Америку", command=exportDB)
         self.btn_Remove.grid(row=2, column=0, **opts)
         self.btn_Cansel = tk.Button(master=self, height=3, text="Отмена", command=self.destroy)
         self.btn_Cansel.grid(row=2, column=1, **opts)
