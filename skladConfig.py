@@ -44,10 +44,10 @@ nameFile_DBC_pickle = os.path.abspath('DB\DBCsklad.pkl')
 # файл БД склада компоненов в формате XLXS для визуального контроля
 nameFile_DBC_excel = os.path.abspath('DB\DBCsklad.xlsx')
 # файл импорта DBC
-nameFile_importDBC_excel = os.path.abspath('Import\DBC_import_Sklad.xlsx')
+nameFile_importDBC_excel = os.path.abspath('import\DBC_import_Sklad.xlsx')
 # файлы экспорта DBC
-nameFile_exportDBC_pickle = os.path.abspath('Export\DBC_export_Sklad.pkl')
-nameFile_exportDBC_excel = os.path.abspath('Export\DBC_export_Sklad.xlsx')
+nameFile_exportDBC_pickle = os.path.abspath('export\DBC_export_Sklad.pkl')
+nameFile_exportDBC_excel = os.path.abspath('export\DBC_export_Sklad.xlsx')
 
 # максимальное количество уровней групп в БД склада компонентов
 MAX_LEVEL_GROUP = 10
@@ -156,10 +156,10 @@ nameFile_DBI_pickle = os.path.abspath('DB\DBIsklad.pkl')
 nameFile_DBI_excel = os.path.abspath('DB\DBIsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBI_excel = os.path.abspath('Import\DBI_import_Sklad.xlsx')
+nameFile_importDBI_excel = os.path.abspath('import\DBI_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBI_pickle = os.path.abspath('Export\DBI_export_Sklad.pkl')
-nameFile_exportDBI_excel = os.path.abspath('Export\DBI_export_Sklad.xlsx')
+nameFile_exportDBI_pickle = os.path.abspath('export\DBI_export_Sklad.pkl')
+nameFile_exportDBI_excel = os.path.abspath('export\DBI_export_Sklad.xlsx')
 
 
 df_DBI = []
@@ -217,10 +217,10 @@ nameFile_DBE_pickle = os.path.abspath('DB\DBEsklad.pkl')
 nameFile_DBE_excel = os.path.abspath('DB\DBEsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBE_excel = os.path.abspath('Import\DBE_import_Sklad.xlsx')
+nameFile_importDBE_excel = os.path.abspath('import\DBE_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBE_pickle = os.path.abspath('Export\DBE_export_Sklad.pkl')
-nameFile_exportDBE_excel = os.path.abspath('Export\DBE_export_Sklad.xlsx')
+nameFile_exportDBE_pickle = os.path.abspath('export\DBE_export_Sklad.pkl')
+nameFile_exportDBE_excel = os.path.abspath('export\DBE_export_Sklad.xlsx')
 
 
 df_DBE = []
@@ -289,10 +289,10 @@ nameFile_DBCU_pickle = os.path.abspath('DB\DBCUsklad.pkl')
 nameFile_DBCU_excel = os.path.abspath('DB\DBCUsklad.xlsx')
 
 # файл импорта DBE
-nameFile_importDBCU_excel = os.path.abspath('Import\DBCU_import_Sklad.xlsx')
+nameFile_importDBCU_excel = os.path.abspath('import\DBCU_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBCU_pickle = os.path.abspath('Export\DBCU_export_Sklad.pkl')
-nameFile_exportDBCU_excel = os.path.abspath('Export\DBCU_export_Sklad.xlsx')
+nameFile_exportDBCU_pickle = os.path.abspath('export\DBCU_export_Sklad.pkl')
+nameFile_exportDBCU_excel = os.path.abspath('export\DBCU_export_Sklad.xlsx')
 
 #'code_units'
 df_DBCU = []
@@ -336,10 +336,10 @@ nameFile_DBS_excel = os.path.abspath('DB\DBSpec.xlsx')
 # nameFile_importDBS_excel = 'importDBSpec.xlsx'
 
 # файл импорта DBE
-nameFile_importDBS_excel = os.path.abspath('Import\DBS_import_Sklad.xlsx')
+nameFile_importDBS_excel = os.path.abspath('import\DBS_import_Sklad.xlsx')
 # файлы экспорта DBE
-nameFile_exportDBS_pickle = os.path.abspath('Export\DBS_export_Sklad.pkl')
-nameFile_exportDBS_excel = os.path.abspath('Export\DBS_export_Sklad.xlsx')
+nameFile_exportDBS_pickle = os.path.abspath('export\DBS_export_Sklad.pkl')
+nameFile_exportDBS_excel = os.path.abspath('export\DBS_export_Sklad.xlsx')
 
 # объект типа DataFrame содержащий БД спецификаций
 df_DBS = []
