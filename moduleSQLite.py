@@ -6,7 +6,9 @@
 # модуль держатель функций работы с SQLite
 
 from sys import getsizeof
-import sqlite3 as sqlite
+import sqlite3 as sql3
+import traceback
+import sys
 import moduleDBClass as mdbc
 
 
@@ -15,6 +17,43 @@ import moduleDBClass as mdbc
 def progress(status, remaining, total):
     print(f'Скопировано {total-remaining} из {total}...')
     return None
+
+def viewCodeError (sql_error):
+    print("Ошибка при работе с sqlite", sql_error)
+    print("Класс исключения: ", sql_error.__class__)
+    print("Исключение", sql_error.args)
+    print("Печать подробноcтей исключения SQLite: ")
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    print(traceback.format_exception(exc_type, exc_value, exc_tb))
+
+
+def CheckExistDBFile (nameFile_DBf: str):
+    """ функция проверки файла БД
+        Вход:
+        nameFile_DBf - наименование файла резерной БД
+        Выход:
+        - Flag_checkDBF - флаг результата проверки БД
+    """ 
+    try:
+        sqlite_connection = sql3.connect(nameFile_DBf)
+        cursor = sqlite_connection.cursor()
+        print("База данных создана и успешно подключена к SQLite")
+        sqlite_select_query = "select sqlite_version();"
+        cursor.execute(sqlite_select_query)
+        record = cursor.fetchall()
+        print("Версия базы данных SQLite: ", record)
+        cursor.close()
+        Flag_checkDBF = True
+
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
+        Flag_checkDBF = False
+
+    finally:
+        if (sqlite_connection):
+            sqlite_connection.close()
+            print("Соединение с SQLite закрыто")
+
 
 def createBackUpDBFile (nameBackUpDBFile: str, nameFile_DBf: str):
     """ функция резервного создания файла БД
@@ -26,20 +65,22 @@ def createBackUpDBFile (nameBackUpDBFile: str, nameFile_DBf: str):
     """    
     Flag_createBackDBF = False
     try:
-        connectionDBFile = sqlite.connect(nameFile_DBf)
-        backup_connection = sqlite.connect(nameBackUpDBFile)
+        connectionDBFile = sql3.connect(nameFile_DBf)
+        backup_connection = sql3.connect(nameBackUpDBFile)
         with backup_connection, connectionDBFile:
             connectionDBFile.backup(backup_connection, pages=3, progress=progress)
             Flag_createBackDBF = True
         print("Резервное копирование выполнено успешно")
-    except sqlite.Error as error:
-        print("Ошибка при резервном копировании: ", error)
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
         Flag_createBackDBF = False
     finally:
         if(backup_connection):
             backup_connection.close()
             connectionDBFile.close()
     return Flag_createBackDBF
+
+
 
 def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup, 
                         sql_request_create_tableDBComponent, 
@@ -49,7 +90,7 @@ def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup,
     """
     FlagCreateTableDBf = False
     try:
-        connectionDBFile = sqlite.connect(nameFile_DBf)
+        connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile:
             cursorDB.execute(sql_request_create_tableDBGroup)
@@ -59,8 +100,8 @@ def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup,
             cursorDB.execute(sql_request_create_tableDBUnits)
             connectionDBFile.commit()
             FlagCreateTableDBf = True
-    except sqlite.Error as error:
-        print("Ошибка при создании таблиц в БД: ", error)
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
         FlagCreateTableDBf = False
     finally:
         if(connectionDBFile):
@@ -85,7 +126,7 @@ def copy_File_SQLDBGroupComponent_In_memory(nameFile_DBf):
     flag_copyTable = False
     flag_empty_Table = False
     try:
-        connectionDBFile = sqlite.connect(nameFile_DBf)
+        connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile:
             #  Надо ппроверить есть ли в таблице данные вообще, иначе будет оибка при SQL запросе на пустую таблицу!!!!!!
@@ -112,7 +153,7 @@ def copy_File_SQLDBGroupComponent_In_memory(nameFile_DBf):
                 flag_copyTable = False
                 flag_empty_Table = True
         
-    except sqlite.Error as error:
+    except sql3.Error as error:
         print("Ошибка копировании таблиц в список БД: ", error)
         flag_copyTable = False
     finally:
