@@ -61,31 +61,7 @@ flag_copyTableInMemory = False      # флаг копирования табли
 
 
 
-sql_create_tableDBGroupComponent = """ CREATE TABLE IF NOT EXISTS DBGroupComponent (
-        id_code_group INTEGER PRIMARY KEY,
-        name_group TEXT);
-        """
-sql_create_tableDBComponent = """ CREATE TABLE IF NOT EXISTS DBComponent (
-        id_code_component INTEGER PRIMARY KEY,
-        name_component TEXT, 
-        code_group0 INTEGER, 
-        code_group1 INTEGER,
-        code_group2 INTEGER,
-        code_group3 INTEGER,
-        code_group4 INTEGER,
-        code_group5 INTEGER,
-        amount INTEGER,
-        min_rezerve INTEGER,
-        code_units INTEGER, 
-        articul TEXT
-        );
-        """
-sql_create_tableDBUnits = """ CREATE TABLE IF NOT EXISTS DBUnits (
-        id_code_units INTEGER PRIMARY KEY,
-        name_units TEXT );
-        """
-    
-sql_delete_data_in_tableDBGroupComponent = 'DELETE FROM DBGroupComponent WHERE code_group > 0;'
+
 
 
 def main():
@@ -98,6 +74,10 @@ def main():
         # функция резервного создания файла БД
         flag_create_back_DBF = msql.createBackUpDBFile (scfg.DBSqlite_backup, scfg.DBSqlite)
         if flag_create_back_DBF:
+            msql.createTableDBFile(scfg.DBSqlite)
+
+
+
             # загрузим DataFrame БД склада компоненов из файла
             if ospath.isfile(scfg.nameFile_DBC_pickle):
                 mi.Load_DataFrameDBC_From_PickleFile() 

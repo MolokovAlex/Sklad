@@ -41,8 +41,8 @@ icon_button_edit = os.path.abspath('icon\edit3.png')
 # --------------- БД SQLite программы --------------------------
 # -------------------------------------------------------------------------------------------------------------------------------------
 
-DBSqlite = 'DB_sql_sklad.db'
-DBSqlite_backup =  'DB_sql_sklad_backup.db'
+DBSqlite = os.path.abspath('DB\DB_sql_sklad.db')
+DBSqlite_backup =  os.path.abspath('DB\DB_sql_sklad_backup.db')
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------

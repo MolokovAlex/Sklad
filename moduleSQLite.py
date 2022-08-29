@@ -12,6 +12,53 @@ import sys
 import moduleDBClass as mdbc
 
 
+sql_create_tableDBGroupComponent = """ CREATE TABLE IF NOT EXISTS DBGroupComponent (
+        id_code_group INTEGER PRIMARY KEY,
+        name_group TEXT);
+        """
+
+# columns_DB_components = [
+#     'id_code_item',                 # уникальный номер компонента, его цифровой отпечаток
+#     'name',                         # наимнование компонента, например "транзистор", "винт М2x20 DIN912 A2"
+#     'amount',                       # количество на складе в единицах измерения
+#     'code_units',                   # код единицы измерения, например: "шт",  "комлект", "л" и т.д.
+#     'min_rezerve',                  # минимальный остаток на складе в единицах измерения
+#     'articul_1C',                   # артикул компонента по базе 1С
+#     'code_1C',                      # код по базе 1С
+#     'name_1C',                      # наименование по базе 1С
+#     'id_code_parent',               # служебное поле - id_code_item родителя(группы) компонента
+#     'id_code_lvl'                   # служебное поле - буквенный код уровня вложенности родителя(группы) (поле только для группы)
+#     ]
+
+sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL CHECK(name !=''), 
+        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0), 
+        id_unit INTEGER,
+        min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0),
+        articul_1C TEXT,
+        code_1C TEXT,
+        name_1C TEXT,
+        id_parent INTEGER,
+        id_lvl INTEGER,
+        FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT
+        );
+        """
+# columns_DBCU = [
+#     'id_code_item',                 # уникальный номер компонента, его цифровой отпечаток
+#     'code_units'                   # код единицы измерения, например: "шт",  "комлект", "л" и т.д.
+#     ]
+
+
+
+sql_create_table_DBU = """ CREATE TABLE IF NOT EXISTS DBU (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL CHECK(name !='')
+        );
+        """
+    
+sql_delete_data_in_tableDBGroupComponent = 'DELETE FROM DBGroupComponent WHERE code_group > 0;'
+
 
 
 def progress(status, remaining, total):
@@ -34,6 +81,7 @@ def CheckExistDBFile (nameFile_DBf: str):
         Выход:
         - Flag_checkDBF - флаг результата проверки БД
     """ 
+    Flag_checkDBF = False
     try:
         sqlite_connection = sql3.connect(nameFile_DBf)
         cursor = sqlite_connection.cursor()
@@ -53,6 +101,7 @@ def CheckExistDBFile (nameFile_DBf: str):
         if (sqlite_connection):
             sqlite_connection.close()
             print("Соединение с SQLite закрыто")
+    return Flag_checkDBF
 
 
 def createBackUpDBFile (nameBackUpDBFile: str, nameFile_DBf: str):
@@ -82,9 +131,7 @@ def createBackUpDBFile (nameBackUpDBFile: str, nameFile_DBf: str):
 
 
 
-def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup, 
-                        sql_request_create_tableDBComponent, 
-                        sql_request_create_tableDBUnits):
+def createTableDBFile(nameFile_DBf):
     """
     создадим таблицы компонентов, групп, едИзмерений
     """
@@ -93,11 +140,11 @@ def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup,
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile:
-            cursorDB.execute(sql_request_create_tableDBGroup)
+            # cursorDB.execute(sql_request_create_tableDBGroup)
+            # connectionDBFile.commit()
+            cursorDB.execute(sql_create_table_DBC)
             connectionDBFile.commit()
-            cursorDB.execute(sql_request_create_tableDBComponent)
-            connectionDBFile.commit()
-            cursorDB.execute(sql_request_create_tableDBUnits)
+            cursorDB.execute(sql_create_table_DBU)
             connectionDBFile.commit()
             FlagCreateTableDBf = True
     except sql3.Error as error_sql:
@@ -106,8 +153,36 @@ def createTableDBFile(nameFile_DBf, sql_request_create_tableDBGroup,
     finally:
         if(connectionDBFile):
             connectionDBFile.close()
+    if FlagCreateTableDBf : 
+        fill_TableDBU_defaul_value(nameFile_DBf)
     return FlagCreateTableDBf
 
+
+def fill_TableDBU_defaul_value(nameFile_DBf):
+    """
+    заполнение таблицы DBU значениями по умолчанию
+    """
+    insert_data_query = """INSERT INTO DBU (name) VALUES (?);"""
+    # data_list = ['шт', 'мл','л','мм','см','м','км','г','кг','т','компл']
+    data_list = [('шт',), ('мл',), ('л',), ('мм',), ('см',), ('м',), ('км',), ('г',), ('кг',), ('т',), ('компл',)]
+    # Flag_fill_TableDBU_defaul_value = False
+    try:
+        connectionDBFile = sql3.connect(nameFile_DBf)
+        cursorDB = connectionDBFile.cursor()
+        with connectionDBFile: 
+            # for item in data_list:
+            #     cursorDB.execute(insert_data_query, item)
+            #     connectionDBFile.commit()
+            cursorDB.executemany(insert_data_query, data_list)
+            Flag_fill_TableDBU_defaul_value = True
+
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
+        Flag_fill_TableDBU_defaul_value = False
+    finally:
+        if(connectionDBFile):
+            connectionDBFile.close()
+    return Flag_fill_TableDBU_defaul_value
 
 def copy_File_SQLDBGroupComponent_In_memory(nameFile_DBf):
     """
