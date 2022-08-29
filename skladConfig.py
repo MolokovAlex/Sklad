@@ -174,7 +174,7 @@ nameFile_exportDBI_excel = os.path.abspath('export\DBI_export_Sklad.xlsx')
 
 df_DBI = []
 
-# наименования полей (столбцов) БД расходов
+# наименования полей (столбцов) БД прихода
 columns_DBI = [
     'id_code_e',                    # уникальный номер строки прихода, его цифровой отпечаток
     'date',                         # дата прихода

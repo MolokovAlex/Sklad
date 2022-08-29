@@ -17,25 +17,13 @@ sql_create_tableDBGroupComponent = """ CREATE TABLE IF NOT EXISTS DBGroupCompone
         name_group TEXT);
         """
 
-# columns_DB_components = [
-#     'id_code_item',                 # уникальный номер компонента, его цифровой отпечаток
-#     'name',                         # наимнование компонента, например "транзистор", "винт М2x20 DIN912 A2"
-#     'amount',                       # количество на складе в единицах измерения
-#     'code_units',                   # код единицы измерения, например: "шт",  "комлект", "л" и т.д.
-#     'min_rezerve',                  # минимальный остаток на складе в единицах измерения
-#     'articul_1C',                   # артикул компонента по базе 1С
-#     'code_1C',                      # код по базе 1С
-#     'name_1C',                      # наименование по базе 1С
-#     'id_code_parent',               # служебное поле - id_code_item родителя(группы) компонента
-#     'id_code_lvl'                   # служебное поле - буквенный код уровня вложенности родителя(группы) (поле только для группы)
-#     ]
-
+# --------------- БД склада компонентов --------------------------
 sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL CHECK(name !=''), 
-        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0), 
+        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0), 
         id_unit INTEGER,
-        min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0),
+        min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0),
         articul_1C TEXT,
         code_1C TEXT,
         name_1C TEXT,
@@ -44,10 +32,6 @@ sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
         FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT
         );
         """
-# columns_DBCU = [
-#     'id_code_item',                 # уникальный номер компонента, его цифровой отпечаток
-#     'code_units'                   # код единицы измерения, например: "шт",  "комлект", "л" и т.д.
-#     ]
 
 
 
@@ -56,7 +40,60 @@ sql_create_table_DBU = """ CREATE TABLE IF NOT EXISTS DBU (
         name TEXT NOT NULL CHECK(name !='')
         );
         """
-    
+
+# наименования полей (столбцов) БД расходов
+# columns_DBI = [
+#     'id_code_e',                    # уникальный номер строки прихода, его цифровой отпечаток
+#     'date',                         # дата прихода
+#     'id_code_item',                 # уникальный номер компонента в приходе
+#     'amount',                       # количество на приход в единицах измерения
+#     'id_code_parent',               # служебное поле - id_code_item родителя(группы) в БД компонентов куда приход компонент
+#     'comments'                      # комментарии к строке прихода
+#     ]
+# --------------- БД прихода компонентов (income) -------------
+sql_create_table_DBI = """ CREATE TABLE IF NOT EXISTS DBI (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL CHECK(date !=''),
+        id_component INTEGER NOT NULL, 
+        amount INTEGER NOT NULL CHECK(amount > 0), 
+        id_parent INTEGER,
+        comments TEXT,
+        FOREIGN KEY (id_component)  REFERENCES DBC (id) ON DELETE RESTRICT
+        );
+        """
+# --------------- БД расхода компонентов (expenditure) -------------
+sql_create_table_DBE = """ CREATE TABLE IF NOT EXISTS DBE (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL CHECK(date !=''),
+        id_component INTEGER NOT NULL, 
+        amount INTEGER NOT NULL CHECK(amount > 0), 
+        id_parent INTEGER,
+        comments TEXT,
+        FOREIGN KEY (id_component)  REFERENCES DBC (id) ON DELETE RESTRICT
+        );
+        """
+# --------------- БД спецификаций ----------------------------------
+# columns_DBS = [
+#     'id_code_e',                    # уникальный номер строки спецификации, его цифровой отпечаток
+#     'id_code_item',                 # уникальный номер компонента в спецификации
+#     'name',                         # наимнование компонента, например "транзистор", "винт М2x20 DIN912 A2" (может быть не нужно?????????  можно определить через id_code_item)
+#     'amount',                        # количество компонента в единицах измерения
+#     'id_code_parent',               # служебное поле - id_code_item родителя(группы) в БД спецификации
+#     'id_code_lvl',                   # служебное поле - буквенный код уровня вложенности родителя(группы) (поле только для группы)
+#     'comments'                      # комментарии к строке спецификации
+#     ]
+sql_create_table_DBS = """ CREATE TABLE IF NOT EXISTS DBS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_component INTEGER NOT NULL, 
+        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0), 
+        id_parent INTEGER,
+        id_lvl INTEGER,
+        comments TEXT,
+        FOREIGN KEY (id_component)  REFERENCES DBC (id) ON DELETE RESTRICT
+        );
+        """
+
+
 sql_delete_data_in_tableDBGroupComponent = 'DELETE FROM DBGroupComponent WHERE code_group > 0;'
 
 
@@ -146,6 +183,12 @@ def createTableDBFile(nameFile_DBf):
             connectionDBFile.commit()
             cursorDB.execute(sql_create_table_DBU)
             connectionDBFile.commit()
+            cursorDB.execute(sql_create_table_DBI)
+            connectionDBFile.commit()
+            cursorDB.execute(sql_create_table_DBE)
+            connectionDBFile.commit()
+            cursorDB.execute(sql_create_table_DBS)
+            connectionDBFile.commit()
             FlagCreateTableDBf = True
     except sql3.Error as error_sql:
         viewCodeError (error_sql)
@@ -163,9 +206,8 @@ def fill_TableDBU_defaul_value(nameFile_DBf):
     заполнение таблицы DBU значениями по умолчанию
     """
     insert_data_query = """INSERT INTO DBU (name) VALUES (?);"""
-    # data_list = ['шт', 'мл','л','мм','см','м','км','г','кг','т','компл']
     data_list = [('шт',), ('мл',), ('л',), ('мм',), ('см',), ('м',), ('км',), ('г',), ('кг',), ('т',), ('компл',)]
-    # Flag_fill_TableDBU_defaul_value = False
+    Flag_fill_TableDBU_defaul_value = False
     try:
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
@@ -183,6 +225,66 @@ def fill_TableDBU_defaul_value(nameFile_DBf):
         if(connectionDBFile):
             connectionDBFile.close()
     return Flag_fill_TableDBU_defaul_value
+
+# demo-данные
+# demo_DBС_1 = {
+#             'id_code_item':  ['1001',           '1002',                   '1003',         '1004'           ,    '1005'           ,    '1006'       ],        
+#             'name':          ['ЭРЭ',            'Микросхемы',             'Цифровые',     'К155ЛА3'        ,    'К155ЛА4'        ,    'К155ЛА8'    ], 
+#             'amount':        ['',               '',                       '',             '15'             ,    '5'              ,    '6'          ],
+#             'code_units':    ['1699',           '1699',                   '1699',         '1700'           ,    '1700'           ,    '1700'       ], 
+#             'min_rezerve':   ['',               '',                       '',             '10'             ,    '10'             ,    '1'          ],
+#             'articul_1C':    ['ЭРЭ_1C',         'Микросхемы_1C',          'Цифровые_1C',  'К155ЛА3'        ,    'К155ЛА4'        ,    'К155ЛА8'    ],
+#             'code_1C':       ['00101217548',    '00101217549',            '00101217550',  '00101217551'    ,    '00101217552'    ,    '00101217553'],
+#             'name_1C':       ['nЭРЭ_1C',        'nМикросхемы_1C',         'nЦифровые_1C', 'nК155ЛА3'       ,    'nК155ЛА4'       ,    'nК155ЛА8'   ],
+#             'id_code_parent':['10000',          '1001',                   '1002',         '1003'           ,    '1003'           ,    '1003'       ],
+#             'id_code_lvl':   ['lvl01',          'lvl02',                  'lvl03',        ''               ,    ''               ,    ''           ]         
+#             }
+# def fill_TableDBC_defaul_value(nameFile_DBf):
+#     """
+#     заполнение таблицы DBC значениями по умолчанию
+#     """
+#     insert_data_query = """INSERT INTO DBC (name, amount, id_unit, min_rezerve, articul_1C, code_1C, name_1C, id_parent, id_lvl) VALUES (?,?,?, ?,?,?, ?,?,?);"""
+#     sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
+#         id INTEGER PRIMARY KEY AUTOINCREMENT,
+#         name TEXT NOT NULL CHECK(name !=''), 
+#         amount INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0), 
+#         id_unit INTEGER,
+#         min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount < 0),
+#         articul_1C TEXT,
+#         code_1C TEXT,
+#         name_1C TEXT,
+#         id_parent INTEGER,
+#         id_lvl INTEGER,
+#         FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT
+#         );
+#         """
+#     # data_list = [('шт',), ('мл',), ('л',), ('мм',), ('см',), ('м',), ('км',), ('г',), ('кг',), ('т',), ('компл',)]
+#     data_list = [
+#         ()
+
+
+#     ]
+#     Flag_fill_TableDBU_defaul_value = False
+#     try:
+#         connectionDBFile = sql3.connect(nameFile_DBf)
+#         cursorDB = connectionDBFile.cursor()
+#         with connectionDBFile: 
+#             # for item in data_list:
+#             #     cursorDB.execute(insert_data_query, item)
+#             #     connectionDBFile.commit()
+#             cursorDB.executemany(insert_data_query, data_list)
+#             Flag_fill_TableDBC_defaul_value = True
+
+#     except sql3.Error as error_sql:
+#         viewCodeError (error_sql)
+#         Flag_fill_TableDBC_defaul_value = False
+#     finally:
+#         if(connectionDBFile):
+#             connectionDBFile.close()
+#     return Flag_fill_TableDBC_defaul_value
+
+
+
 
 def copy_File_SQLDBGroupComponent_In_memory(nameFile_DBf):
     """
