@@ -70,11 +70,11 @@ def main():
     app.title("Программа ведения склада")
 
     # проверка наличия файла БД SQLite
-    if msql.CheckExistDBFile (scfg.DBSqlite):
+    if msql.CheckExistDBFile ():
         # функция резервного создания файла БД
         flag_create_back_DBF = msql.createBackUpDBFile (scfg.DBSqlite_backup, scfg.DBSqlite)
         if flag_create_back_DBF:
-            msql.createTableDBFile(scfg.DBSqlite)
+            msql.createTableDBFile()
 
 
 

@@ -18,6 +18,7 @@ import re
 import numpy as np
 
 import skladConfig as scfg
+import moduleSQLite as msql
 import moduleDBClass as mdbc
 import moduleImport as mi
 import moduleExport as me
@@ -27,8 +28,8 @@ import modulAppGUI as mag
 class WindowEditComponent(tk.Toplevel):
     def __init__(self, parent, modeWindow, viewDB):  
         # viewDB - отображение в окне БД:
-        # 'DBC' = DataBaseComponents
-        # 'DBS' = DataBaseSpecification   
+        # viewDB = 'DBC' = DataBaseComponents
+        # viewDB = 'DBS' = DataBaseSpecification   
         # modeWindow - внешний вид и расположени кнопок окна в режимах:
         # modeWindow = 'edit'
         # modeWindow = 'comp_in_spec'
@@ -93,10 +94,10 @@ class WindowEditComponent(tk.Toplevel):
         # DBC = DataBaseComponents
         # DBS = DataBaseSpecification
         if (viewDB == 'DBC') and (modeWindow == 'edit'):
-            self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Доб.",command=lambda m='comp', vDB = viewDB: self.fn_add_Components(mode = m, viewDB = vDB))
-            self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Изм.", command=lambda m='comp', vDB = viewDB: self.fn_rename_Component(mode = m, viewDB = vDB))
-            self.btn_DeleteComp = tk.Button(master=self.frame_TreeComponents, text="Удал", command=lambda m='comp', vDB = viewDB: self.fn_delete_Components(mode = m, viewDB = vDB))
-            self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Пере", command=lambda m='comp', vDB = viewDB: self.fn_remove_Components(mode = m, viewDB = vDB))
+            self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Доб.",command=lambda mW='comp', vDB = viewDB: self.fn_add_Components(mode = mW, viewDB = vDB))
+            self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Изм.", command=lambda mW='comp', vDB = viewDB: self.fn_rename_Component(mode = mW, viewDB = vDB))
+            self.btn_DeleteComp = tk.Button(master=self.frame_TreeComponents, text="Удал", command=lambda mW='comp', vDB = viewDB: self.fn_delete_Components(mode = mW, viewDB = vDB))
+            self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Пере", command=lambda mW='comp', vDB = viewDB: self.fn_remove_Components(mode = mW, viewDB = vDB))
         elif (viewDB == 'DBC') and (modeWindow == 'expenditure'):
             self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1)#, command=self.fn_choice_comp_in_expenditure)
             self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1,  command=self.clicked)
@@ -146,9 +147,15 @@ class WindowEditComponent(tk.Toplevel):
         self.ent_NameComponent.pack(fill=tk.X, expand=1, side=tk.LEFT, ipadx=5, ipady=5)
 
         self.name_unit = tk.StringVar()
-        self.name_unit.set(scfg.UnitsCodeName['1699'])   # default
+        # self.name_unit.set(scfg.UnitsCodeName['1699'])   # default value
+
+        # a = msql.query_name_from_DBU_where_id()#, query = scfg.id_default_DBU)
+        self.name_unit.set(msql.query_name_from_DBU_where_id())
+
         self.lbl_name_units = tk.Label(master=self.frame_Dimension, text="Ед измерения:") 
-        self.CB_name_units = ttk.Combobox(self.frame_Dimension, values=list(scfg.UnitsCodeName.values()), textvariable = self.name_unit, width=5)
+        # self.CB_name_units = ttk.Combobox(self.frame_Dimension, values=list(scfg.UnitsCodeName.values()), textvariable = self.name_unit, width=5)
+        # b = msql.query_all_name_from_DBU()
+        self.CB_name_units = ttk.Combobox(self.frame_Dimension, values=msql.query_all_name_from_DBU(), textvariable = self.name_unit, width=5)        
 
         self.lbl_amount = tk.Label(master=self.frame_Dimension, text="Количество на складе ПУ:") 
         self.lbl_Namount = tk.Label(master=self.frame_Dimension, text="_______") 

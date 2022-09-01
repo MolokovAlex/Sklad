@@ -19,7 +19,61 @@ nameFile_DB = 'DBsklad.db'
 # nameFile_pu = 'sklad_pu.xlsx'
 # nameFile_out = 'sklad_pu_out.xlsx'
 
+# (name, id_parent) 
+data_list_default_DBG = [
+        ('Склад',       0),     #id=1
+        ('Разъемы',     1),     #id=2
+        ('DIN',         2),     #id=3
+        ('СП Каскад',   2),     #id=4
+        ('6Р100-6Р150', 2),     #id=5
+        ('СНП407-100',  4),     #id=6
+        ('СНП407-150',  4),     #id=7
+        ('6Р100',       5),     #id=8
+        ('6Р150',       5),     #id=9
+        ('DIN 32 конт', 3),     #id=10
+        ('DIN 64 конт', 3),     #id=11
+        ('Микросхемы',  1),     #id=12
+        ('Аналоговые',  12),    #id=13
+        ('Цифровые',    12),    #id=14
+        ('прочие',      12)     #id=15
+        ]
 
+# (name, amount, id_unit, min_rezerve, articul_1C, code_1C, name_1C, id_parent, id_lvl)        
+data_list_default_DBC = [
+        ('К155ЛА3', 15,     1,  10, 'К155ЛА3',  '00101217551',  'nК155ЛА3', 14,  0),            #id=1
+        ('К155ЛА4', 5,      1,  10, 'К155ЛА4',  '00101217552',  'nК155ЛА4', 14,  0),            #id=2
+        ('К155ЛА8', 6,      1,  1,  'К155ЛА8',  '00101217553',  'nК155ЛА8', 14,  0),            #id=3
+    ]
+
+# (date, id_component, amount, comments)
+data_list_default_DBI = [
+        ('1999-12-01 22:01:15', 1,  1,  'из ЧипиДипа счет 2345 от 1999-11-01'),        #id=1
+        ('1999-12-02 08:07:15', 2,  2,  'из ЧипиДипа счет 2345 от 1999-11-01'),        #id=2
+        ('1999-12-03 09:04:15', 3,  1,  'из ЧипиДипа счет 2345 от 1999-11-01'),        #id=3
+    ]
+
+# (date, id_component, amount, comments)
+data_list_default_DBE = [
+        ('2001-11-01 23:01:15', 1,  1,  'уехало в офис через ДЛ'),                  #id=1
+        ('2001-11-02 04:07:15', 2,  2,  'взято инженером в коммандировку'),         #id=2
+        ('2001-11-03 05:04:15', 3,  1,  'проект Автора'),                           #id=3
+    ]
+
+# (name)
+data_list_default_DBU = [
+        ('шт',),                #id=1             
+        ('мл',),                #id=2 
+        ('л',),                 #id=3 
+        ('мм',),                #id=4 
+        ('см',),                #id=5 
+        ('м',),                 #id=6 
+        ('км',),                #id=7 
+        ('г',),                 #id=8 
+        ('кг',),                #id=9 
+        ('т',),                 #id=10 
+        ('компл',)              #id=11 
+    ]
+id_default_DBU = 1
 
 
 
@@ -82,7 +136,7 @@ columns_DB_components = [
 # Какие столбцы должны отображаться в дереве таблицы в окне "Импорт" и "редактировании групп"
 # displayColumnsInWindowsImport=['id_code_item', 'amount', 'code_units', 'min_rezerve', 'articul_1C', 'code_1C', 'name_1C',  'id_code_parent',   'id_code_lvl']
 # displayColumnsShort=['id_code_item',   'id_code_parent',   'id_code_lvl']
-displayColumnsShort=['id_code_item']#,   'id_code_parent',   'id_code_lvl']
+displayColumnsShort=['id_code_item',   'id_code_parent']#,   'id_code_lvl']
 
 # Какие столбцы должны отображаться в дереве таблицы в окне "редактирование компонентов"
 # displayColumnsInWindowsImport=['id_code_item', 'amount', 'code_units', 'min_rezerve', 'articul_1C', 'code_1C', 'name_1C',  'id_code_parent',   'id_code_lvl']
