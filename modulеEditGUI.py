@@ -16,6 +16,7 @@ import pandas as pd
 # importing re for regular expressions
 import re
 import numpy as np
+import sqlite3 as sql3
 
 import skladConfig as scfg
 import moduleSQLite as msql
@@ -278,9 +279,38 @@ class WindowEditComponent(tk.Toplevel):
         elif (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): dataFrame_in = scfg.df_DBC
         id_code_item = self.tree2.selection()[0]
         self.selection_item = self.tree2.selection()[0]
-        indx = dataFrame_in[dataFrame_in['id_code_item'] == id_code_item].index[0]   
+
+        #  заполним поля формы через sql запросы
+
+        # найдем в DBC строку с id = id_code_item
+        connectionDBFile = sql3.connect(scfg.DBSqlite)
+        cursorDB = connectionDBFile.cursor()
+        with connectionDBFile:
+            # вычисли максимальное значение id в таблице DBС
+            # cursorDB.execute("""SELECT MAX(id) FROM DBC;""")
+            # maxxx3 = cursorDB.fetchone()
+            # maxx2 = maxxx3[0]
+
+             # получим названия столбцов БД
+            cursorDB.execute('PRAGMA table_info("DBC")')
+            column_names = [i[1] for i in cursorDB.fetchall()]
+
+            # вытащим строки - получим из DBC у которых id =id_code_item
+            cursorDB.execute("""SELECT * FROM DBC WHERE id=?;""", (id_code_item,))
+            row_from_DBС = cursorDB.fetchall()
+
+            # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
+            for item_tupple in row_from_DBС:
+                stringDF = {}
+                stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+
+
+
+
+        #  заполним поля формы
+        # indx = dataFrame_in[dataFrame_in['id_code_item'] == id_code_item].index[0]   
         # indx = df2.index[0]
-        stringDF = mag.Unpack_String_DataFrame(dataFrame_in, indx)
+        # stringDF = mag.Unpack_String_DataFrame(dataFrame_in, indx)
         self.ent_NameComponent.delete(0, END)
         self.ent_NameComponent.insert(0, stringDF['name'])
         self.lbl_Namount.config(text=stringDF['amount'])

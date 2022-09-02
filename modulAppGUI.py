@@ -325,7 +325,7 @@ def Unpack_String_DataFrame(DataFrameTree: pd.DataFrame, index: str):
     return upsdf
 
 
-def viewTreeComponents(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame, parent):
+def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_parent):
     """
     отображение ветки в дереве Компонентов
     Вход:
@@ -334,24 +334,67 @@ def viewTreeComponents(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame, parent):
     parent - id_code_item группы(ветки) дерева
     """
     stringDF = {}
-    # выдать всех у кого в родителях код parent
-    df2 = DataFrameTree[DataFrameTree['id_code_parent'] == parent]   
-
     # очистим все дерево компонентов            
-    for i in treeF.get_children(): treeF.delete(i)      
-    # заполним дерево
-    if not(df2.empty):
-            for indx in df2.index:
-                stringDF = Unpack_String_DataFrame(DataFrameTree, indx)
-                # if (stringDF['id_code_lvl'] != 'lvl01' ):
-                if stringDF['id_code_lvl'] in scfg.listOfLevel:
-                    ...
-                else:
-                    id_code_item = int(stringDF['id_code_item'])
-                    # # извлекем наименование ед изм - возмем по коду 'id_code_item' из DBCU
-                    UnitsName = stringDF['UnitsName']
-                    # treeF.insert('', 'end',  id_code_item, text=name, values=[id_code_item, amount, code_units, min_rezerve, articul_1C, code_1C, name_1C, id_code_parent, id_code_lvl])
-                    treeF.insert('', 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
+    for i in treeComp.get_children(): treeComp.delete(i)
+
+    # заполним дерево TreeComponent названиями данными из DBC у которых родителем является группа id_parent из DBG
+
+    connectionDBFile = sql3.connect(scfg.DBSqlite)
+    cursorDB = connectionDBFile.cursor()
+    with connectionDBFile:
+        # вычисли максимальное значение id в таблице DBС
+        # cursorDB.execute("""SELECT MAX(id) FROM DBC;""")
+        # maxxx3 = cursorDB.fetchone()
+        # maxx2 = maxxx3[0]
+
+         # получим названия столбцов БД
+        cursorDB.execute('PRAGMA table_info("DBC")')
+        column_names = [i[1] for i in cursorDB.fetchall()]
+
+        # вытащим строки - получим из DBC у которых id_parent =id_parent
+        cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.id_parent=? ;""", (id_parent,))
+        # cursorDB.execute("""SELECT DBC.name, DBC.amount, DBU.name FROM DBC, DBU WHERE DBU.id = DBC.id_unit ;""")#, (id_parent,))
+        # cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC, DBU WHERE DBU.id = DBC.id_unit AND DBC.id_parent=? ;""", (id_parent,))
+        rows_from_DBС = cursorDB.fetchall()
+
+        # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
+        for item_tupple in rows_from_DBС:
+            stringDF = {}
+            stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+            # print(stringDF)    # {'id': 1, 'name': 'Склад'}
+            if stringDF['id_parent'] ==0: 
+                index_code_parent=''
+            else:
+                index_code_parent = str(stringDF['id_parent'])
+            # treeComp.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
+            treeComp.insert('', 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], 0, stringDF['id_unit'], 0, '', '', '', stringDF['id_parent'], 0])
+
+
+    if(connectionDBFile):
+            connectionDBFile.close()
+
+
+
+
+
+
+          # выдать всех у кого в родителях код parent
+    # df2 = DataFrameTree[DataFrameTree['id_code_parent'] == id_parent]   
+
+          
+    # # заполним дерево
+    # if not(df2.empty):
+    #         for indx in df2.index:
+    #             stringDF = Unpack_String_DataFrame(DataFrameTree, indx)
+    #             # if (stringDF['id_code_lvl'] != 'lvl01' ):
+    #             if stringDF['id_code_lvl'] in scfg.listOfLevel:
+    #                 ...
+    #             else:
+    #                 id_code_item = int(stringDF['id_code_item'])
+    #                 # # извлекем наименование ед изм - возмем по коду 'id_code_item' из DBCU
+    #                 UnitsName = stringDF['UnitsName']
+    #                 # treeF.insert('', 'end',  id_code_item, text=name, values=[id_code_item, amount, code_units, min_rezerve, articul_1C, code_1C, name_1C, id_code_parent, id_code_lvl])
+    #                 treeComp.insert('', 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
 
     return None
 
@@ -379,43 +422,46 @@ def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame):
 
 def viewTreeGroup(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame): 
 
-    a=0
     stringDF = {}
     # очищаем дерево
     for i in treeF.get_children(): treeF.delete(i)
     
 
 
-    # заполним дерево TreeGroup названиями групп
+    # заполним дерево TreeGroup названиями групп из DBG
     
     connectionDBFile = sql3.connect(scfg.DBSqlite)
     cursorDB = connectionDBFile.cursor()
     with connectionDBFile: 
         # вычисли максимальное значение id родителя в таблице DBG
-        cursorDB.execute("""SELECT MAX(id_parent) FROM DBG;""")
-        maxxx = cursorDB.fetchone()
-        maxx = maxxx[0]
+        # cursorDB.execute("""SELECT MAX(id_parent) FROM DBG;""")
+        # maxxx = cursorDB.fetchone()
+        # maxx = maxxx[0]
 
+        # вычисли максимальное значение id в таблице DBG
+        cursorDB.execute("""SELECT MAX(id) FROM DBG;""")
+        maxxx3 = cursorDB.fetchone()
+        maxx2 = maxxx3[0]
+
+        # получим названия столбцов БД
         cursorDB.execute('PRAGMA table_info("DBG")')
         column_names = [i[1] for i in cursorDB.fetchall()]
-        print(column_names)
+        # print(column_names)
         # ['id', 'name', 'id_parent']
-        for item_id_parent in range (0, maxx+1, 1):
-            # получим из DBG названия у которых id_parent =0
-            # item_id_parent = 0
-            cursorDB.execute("""SELECT * FROM DBG WHERE id_parent=?;""", (item_id_parent,))
+
+        # пройдемся по всем индексам БД и 
+        for item_id in range (1, maxx2, 1):
+            # вытащим строку - получим из DBG названия у которых id =item_id
+            cursorDB.execute("""SELECT * FROM DBG WHERE id=?;""", (item_id,))
             row_from_DBG = cursorDB.fetchall()
-            print(row_from_DBG)
-            # [(1, 'Склад', 0)]
+            # print(row_from_DBG)    # [(1, 'Склад', 0)]
+            
             if row_from_DBG:
-                # сделаем словарь и заполняем дерево
+                # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
                 for item_tupple in row_from_DBG:
                     stringDF = {}
-                    stringDF[column_names[0]] = item_tupple[0]
-                    stringDF[column_names[1]] = item_tupple[1]
-                    stringDF[column_names[2]] = item_tupple[2]
-                    print(stringDF)
-                    # {'id': 1, 'name': 'Склад'}
+                    stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+                    # print(stringDF)    # {'id': 1, 'name': 'Склад'}
                     if stringDF['id_parent'] ==0: 
                         index_code_parent=''
                     else:
@@ -447,37 +493,6 @@ def viewTreeGroup(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame):
             connectionDBFile.close()
 
 
-    #
-    # for lvl in scfg.listOfLevel:
-    #     # список названий всех полей/столбцов в
-    #     # в sqlite
-    #     # connectionDBFile = sql3.connect(scfg.DBSqlite)
-    #     # cursorDB = connectionDBFile.cursor()
-    #     # with connectionDBFile: 
-    #     #     # for item in data_list:
-    #     #     cursorDB.execute('PRAGMA table_info("DBC")')
-    #     #     column_names = [i[1] for i in cursorDB.fetchall()]
-    #     #     print(column_names)
-    #     #     # извлекаем строку по индксу
-    #     #     cursorDB.execute("""SELECT * FROM DBC WHERE id=?;""", (index+1,))
-    #     #     a = cursorDB.fetchone()
-    #     # выдать всех у кого в родителях код lvl
-    #     df2 = DataFrameTree[DataFrameTree['id_code_lvl'] == lvl]     
-    #     if not(df2.empty):
-    #         for indx in df2.index:
-    #             stringDF = Unpack_String_DataFrame(DataFrameTree, indx)  
-    #             if lvl == 'lvl01':
-    #                 id_code_parent = ''
-    #             else: 
-    #                 id_code_parent = DataFrameTree.loc[indx, 'id_code_parent'] 
-    #             index_code_parent = id_code_parent
-    #             id_code_item = int(stringDF['id_code_item'])
-
-    #             # # извлекем наименование ед изм - возмем по коду 'id_code_item' из DBCU
-    #             UnitsName = stringDF['UnitsName']
-
-    #             # treeF.insert(index_code_parent, 'end',  id_code_item, text=name, values=[id_code_item, amount, code_units, min_rezerve, articul_1C, code_1C, name_1C, id_code_parent, id_code_lvl])
-    #             treeF.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
 
 
 def Setting_TreeView(treeF:ttk.Treeview, form):

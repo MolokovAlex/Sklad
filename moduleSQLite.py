@@ -184,11 +184,11 @@ def createTableDBFile():
         if(connectionDBFile):
             connectionDBFile.close()
     # if FlagCreateTableDBf : 
-        # fill_TableDBG_defaul_value()
-        # fill_TableDBU_defaul_value()
-        # fill_TableDBC_defaul_value()
-        # fill_TableDBI_defaul_value()
-        # fill_TableDBE_defaul_value()
+    #     fill_TableDBG_defaul_value()
+    #     fill_TableDBU_defaul_value()
+    #     fill_TableDBC_defaul_value()
+    #     fill_TableDBI_defaul_value()
+    #     fill_TableDBE_defaul_value()
     return FlagCreateTableDBf
 
 
