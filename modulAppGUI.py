@@ -46,7 +46,7 @@ class App(tk.Tk):
         self.frame_Logger.columnconfigure(0, weight=1)
         self.frame_Logger.rowconfigure(0, weight=0)
 
-    def confirm_delete(self):
+    def confirm_delete(self) -> None:
     #     message = "Вы уверены, что хотите закрыть это окно?"
     #     if mb.askyesno(message=message, parent=self):
         # сохраняем изменненный DataFame в файл перед закрытием основного окна
@@ -56,7 +56,7 @@ class App(tk.Tk):
         self.destroy()
         return None        
 
-    def createMainMenu(self):
+    def createMainMenu(self) -> None:
         self.mainmenu = Menu(self)
         self.config(menu=self.mainmenu)
 
@@ -101,7 +101,7 @@ class App(tk.Tk):
 
         return None
 
-    def open_Window_Export(self):
+    def open_Window_Export(self) -> None:
         """
         открытие окна экспорта        
         """
@@ -110,7 +110,7 @@ class App(tk.Tk):
         return None
 
 
-    def open_Window_expenditure_Component(self):
+    def open_Window_expenditure_Component(self) -> None:
         """
         открытие окна для операции расхода компонента на различные цели        
         """
@@ -129,7 +129,7 @@ class App(tk.Tk):
 
         return None
 
-    def open_Window_income_Component(self):
+    def open_Window_income_Component(self) -> None:
         """
         открытие окна для операции расхода компонента на различные цели        
         """
@@ -149,7 +149,7 @@ class App(tk.Tk):
         return None    
     
 
-    def open_Window_Edit_Specification(self):
+    def open_Window_Edit_Specification(self) -> None:
         # viewWindow = 'DBC' = DataBaseComponents
         # 'DBS' = DataBaseSpecification   
         # modeWindow = 'edit'
@@ -169,7 +169,7 @@ class App(tk.Tk):
         self.text_box.insert(tk.END, "open_WindowEdit_Component"+"\n")
         return None  
 
-    def open_Window_Import_Component(self, modeWindow, viewWindow):
+    def open_Window_Import_Component(self, modeWindow, viewWindow) -> None:
         """
         сюда приходим из меню 'Импорт Components'
         Функция открытия универсального окна Импрта или Перемещния
@@ -193,76 +193,8 @@ class App(tk.Tk):
         return None
 
 
-class WindowTree(tk.Toplevel):
-    def __init__(self, parent, modeWindow, viewDB):    
-        # визуальное отображение универсального окна дерева групп для БД компонентов или БД спецификаций :
-        # viewDB = DBC = DataBaseComponents
-        # viewDB = DBS = DataBaseSpecification
-        # режим работы окна - или "перемещнние " или "импорт"
-        # modeWindow = 'remove'
-        # modeWindow == 'import
-        # modeWindow = 'expenditure'  - режим окна Расход компонента
-                                                                        
-        super().__init__(parent)
-        # self.geometry("1024x600")
-        opts = { 'ipadx': 3, 'ipady': 3 , 'sticky': 'nswe' }
 
-        if  (viewDB == 'DBS') and (modeWindow == 'expenditure'):
-            self.label_to = tk.Label(self, text="В какую спецфикацию переместить ? ")    
-        self.label_to.grid(row=0, column=0, **opts)
-
-        self.frame_tableTreeGroup = tk.LabelFrame(master=self, text="Группы", relief=tk.SUNKEN, borderwidth=3)   #, height=50)
-        self.frame_tableTreeGroup.grid(row=1, column=0,columnspan=2, **opts)
-
-        if  (viewDB == 'DBS') and (modeWindow == 'expenditure'):
-            self.btn_Remove = tk.Button(master=self, height=3, text="Сюда", command=self.fn_removComponent)
-        self.btn_Remove.grid(row=2, column=0, **opts)
-        self.btn_Cansel = tk.Button(master=self, height=3, text="Отмена", command=self.destroy)
-        self.btn_Cansel.grid(row=2, column=1, **opts)
-
-        self.treeGroup = ttk.Treeview(self.frame_tableTreeGroup, show="tree headings", height= 15)#, columns=col) #self.columns)
-        self.treeGroup.grid(row=0, column=1, rowspan=4, **opts)
-
-        Setting_TreeView(self.treeGroup, form = 'short')
-
-        self.ysb = ttk.Scrollbar(self.frame_tableTreeGroup, orient=tk.VERTICAL, command=self.treeGroup.yview)
-        self.treeGroup.configure(yscroll=self.ysb.set)
-        self.ysb.grid(row=0, column=2, rowspan=4, **opts)
-
-        self.treeGroup.bind('<<TreeviewSelect>>', self.on_select)
-
-        self.new_parent = 0
-        self.sel = 0
-        
-        # DBC = DataBaseComponents
-        # DBS = DataBaseSpecification
-        if viewDB == 'DBC':   
-            dataFrame_in = scfg.df_DBC
-            if not(dataFrame_in.empty):
-                viewTreeGroup(self.treeGroup, dataFrame_in)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
-
-        elif viewDB == 'DBS': 
-            dataFrame_in = scfg.df_DBS
-            if not(dataFrame_in.empty):
-                viewTreeGroupSpec(self.treeGroup, dataFrame_in)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
-        return None
-
-    def open(self):
-        self.grab_set()
-        self.wait_window()
-        usr = self.new_parent
-        return usr
-    
-    def fn_removComponent(self):
-        self.new_parent = self.sel[0]
-        self.destroy()
-        return None
-
-    def on_select(self, event):
-        self.sel = self.treeGroup.selection()
-
-
-def Unpack_String_DataFrame(DataFrameTree: pd.DataFrame, index: str):
+def Unpack_String_DataFrame(DataFrameTree: pd.DataFrame, index: str) -> None:
     """
     Универсальная Распаковка строки таблцицы DataFrama на поля(столбцы), т.е. SerialFrame
     список полей- какие найдутся в DataFrame
@@ -325,7 +257,8 @@ def Unpack_String_DataFrame(DataFrameTree: pd.DataFrame, index: str):
     return upsdf
 
 
-def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_parent):
+# def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_parent):
+def viewTreeComponents(treeComp:ttk.Treeview, id_parent: int) -> None:
     """
     отображение ветки в дереве Компонентов
     Вход:
@@ -338,7 +271,6 @@ def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_pa
     for i in treeComp.get_children(): treeComp.delete(i)
 
     # заполним дерево TreeComponent названиями данными из DBC у которых родителем является группа id_parent из DBG
-
     connectionDBFile = sql3.connect(scfg.DBSqlite)
     cursorDB = connectionDBFile.cursor()
     with connectionDBFile:
@@ -350,6 +282,7 @@ def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_pa
          # получим названия столбцов БД
         cursorDB.execute('PRAGMA table_info("DBC")')
         column_names = [i[1] for i in cursorDB.fetchall()]
+        column_names.append('name_unit')
 
         # вытащим строки - получим из DBC у которых id_parent =id_parent
         cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.id_parent=? ;""", (id_parent,))
@@ -366,39 +299,13 @@ def viewTreeComponents(treeComp:ttk.Treeview, DataFrameTree: pd.DataFrame, id_pa
                 index_code_parent=''
             else:
                 index_code_parent = str(stringDF['id_parent'])
-            # treeComp.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
-            treeComp.insert('', 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], 0, stringDF['id_unit'], 0, '', '', '', stringDF['id_parent'], 0])
-
+            treeComp.insert('', 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], stringDF['amount'], stringDF['name_unit'], stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_parent'], 0])
 
     if(connectionDBFile):
             connectionDBFile.close()
-
-
-
-
-
-
-          # выдать всех у кого в родителях код parent
-    # df2 = DataFrameTree[DataFrameTree['id_code_parent'] == id_parent]   
-
-          
-    # # заполним дерево
-    # if not(df2.empty):
-    #         for indx in df2.index:
-    #             stringDF = Unpack_String_DataFrame(DataFrameTree, indx)
-    #             # if (stringDF['id_code_lvl'] != 'lvl01' ):
-    #             if stringDF['id_code_lvl'] in scfg.listOfLevel:
-    #                 ...
-    #             else:
-    #                 id_code_item = int(stringDF['id_code_item'])
-    #                 # # извлекем наименование ед изм - возмем по коду 'id_code_item' из DBCU
-    #                 UnitsName = stringDF['UnitsName']
-    #                 # treeF.insert('', 'end',  id_code_item, text=name, values=[id_code_item, amount, code_units, min_rezerve, articul_1C, code_1C, name_1C, id_code_parent, id_code_lvl])
-    #                 treeComp.insert('', 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
-
     return None
 
-def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame): 
+def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame) -> None: 
 
     a=0
     stringDF = {}
@@ -420,7 +327,7 @@ def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame):
                 treeF.insert(index_code_parent, 'end',  id_code_e, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'],  stringDF['id_code_parent'], stringDF['id_code_lvl']])
         
 
-def viewTreeGroup(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame): 
+def viewTreeGroup(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame): 
 
     stringDF = {}
     # очищаем дерево
@@ -450,7 +357,7 @@ def viewTreeGroup(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame):
         # ['id', 'name', 'id_parent']
 
         # пройдемся по всем индексам БД и 
-        for item_id in range (1, maxx2, 1):
+        for item_id in range (1, maxx2+1, 1):
             # вытащим строку - получим из DBG названия у которых id =item_id
             cursorDB.execute("""SELECT * FROM DBG WHERE id=?;""", (item_id,))
             row_from_DBG = cursorDB.fetchall()
@@ -571,7 +478,73 @@ def Setting_TreeView(treeF:ttk.Treeview, form):
 
     return None
 
+# class WindowTree(tk.Toplevel):
+#     def __init__(self, parent, modeWindow, viewDB):    
+#         # визуальное отображение универсального окна дерева групп для БД компонентов или БД спецификаций :
+#         # viewDB = DBC = DataBaseComponents
+#         # viewDB = DBS = DataBaseSpecification
+#         # режим работы окна - или "перемещнние " или "импорт"
+#         # modeWindow = 'remove'
+#         # modeWindow == 'import
+#         # modeWindow = 'expenditure'  - режим окна Расход компонента
+                                                                        
+#         super().__init__(parent)
+#         # self.geometry("1024x600")
+#         opts = { 'ipadx': 3, 'ipady': 3 , 'sticky': 'nswe' }
 
+#         if  (viewDB == 'DBS') and (modeWindow == 'expenditure'):
+#             self.label_to = tk.Label(self, text="В какую спецфикацию переместить ? ")    
+#         self.label_to.grid(row=0, column=0, **opts)
+
+#         self.frame_tableTreeGroup = tk.LabelFrame(master=self, text="Группы", relief=tk.SUNKEN, borderwidth=3)   #, height=50)
+#         self.frame_tableTreeGroup.grid(row=1, column=0,columnspan=2, **opts)
+
+#         if  (viewDB == 'DBS') and (modeWindow == 'expenditure'):
+#             self.btn_Remove = tk.Button(master=self, height=3, text="Сюда", command=self.fn_removComponent)
+#         self.btn_Remove.grid(row=2, column=0, **opts)
+#         self.btn_Cansel = tk.Button(master=self, height=3, text="Отмена", command=self.destroy)
+#         self.btn_Cansel.grid(row=2, column=1, **opts)
+
+#         self.treeGroup = ttk.Treeview(self.frame_tableTreeGroup, show="tree headings", height= 15)#, columns=col) #self.columns)
+#         self.treeGroup.grid(row=0, column=1, rowspan=4, **opts)
+
+#         Setting_TreeView(self.treeGroup, form = 'short')
+
+#         self.ysb = ttk.Scrollbar(self.frame_tableTreeGroup, orient=tk.VERTICAL, command=self.treeGroup.yview)
+#         self.treeGroup.configure(yscroll=self.ysb.set)
+#         self.ysb.grid(row=0, column=2, rowspan=4, **opts)
+
+#         self.treeGroup.bind('<<TreeviewSelect>>', self.on_select)
+
+#         self.new_parent = 0
+#         self.sel = 0
+        
+#         # DBC = DataBaseComponents
+#         # DBS = DataBaseSpecification
+#         if viewDB == 'DBC':   
+#             dataFrame_in = scfg.df_DBC
+#             if not(dataFrame_in.empty):
+#                 viewTreeGroup(self.treeGroup, dataFrame_in)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
+
+#         elif viewDB == 'DBS': 
+#             dataFrame_in = scfg.df_DBS
+#             if not(dataFrame_in.empty):
+#                 viewTreeGroupSpec(self.treeGroup, dataFrame_in)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
+#         return None
+
+#     def open(self):
+#         self.grab_set()
+#         self.wait_window()
+#         usr = self.new_parent
+#         return usr
+    
+#     def fn_removComponent(self):
+#         self.new_parent = self.sel[0]
+#         self.destroy()
+#         return None
+
+#     def on_select(self, event):
+#         self.sel = self.treeGroup.selection()
 
     # def fn_add_groupComponents(self):
     #     sql_insert_data_in_tableDBGroupComponent = 'INSERT INTO DBGroupComponent (code_group, name_group) values(?, ?)' 

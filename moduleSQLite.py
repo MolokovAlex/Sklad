@@ -26,9 +26,9 @@ sql_create_table_DBG = """ CREATE TABLE IF NOT EXISTS DBG (
 sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL CHECK(name !=''), 
-        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0), 
+        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount >= 0), 
         id_unit INTEGER,
-        min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0),
+        min_rezerve INTEGER NOT NULL DEFAULT 0 CHECK(amount >= 0),
         articul_1C TEXT,
         code_1C TEXT,
         name_1C TEXT,
@@ -209,6 +209,7 @@ def fill_TableDBG_defaul_value():
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
             cursorDB.executemany(insert_data_query, scfg.data_list_default_DBG)
+            connectionDBFile.commit()
             Flag_fill_TableDBG_defaul_value = True
 
     except sql3.Error as error_sql:
@@ -236,6 +237,7 @@ def fill_TableDBU_defaul_value():
             #     cursorDB.execute(insert_data_query, item)
             #     connectionDBFile.commit()
             cursorDB.executemany(insert_data_query, scfg.data_list_default_DBU)
+            connectionDBFile.commit()
             Flag_fill_TableDBU_defaul_value = True
 
     except sql3.Error as error_sql:
@@ -261,6 +263,7 @@ def fill_TableDBC_defaul_value():
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
             cursorDB.executemany(insert_data_query, scfg.data_list_default_DBC)
+            connectionDBFile.commit()
             Flag_fill_TableDBC_defaul_value = True
 
     except sql3.Error as error_sql:
@@ -285,6 +288,7 @@ def fill_TableDBI_defaul_value():
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
             cursorDB.executemany(insert_data_query, scfg.data_list_default_DBI)
+            connectionDBFile.commit()
             Flag_fill_TableDBI_defaul_value = True
 
     except sql3.Error as error_sql:
@@ -308,6 +312,7 @@ def fill_TableDBE_defaul_value():
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
             cursorDB.executemany(insert_data_query, scfg.data_list_default_DBE)
+            connectionDBFile.commit()
             Flag_fill_TableDBE_defaul_value = True
 
     except sql3.Error as error_sql:

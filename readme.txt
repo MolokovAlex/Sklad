@@ -10,6 +10,12 @@
 Python
 Pandas
 
+030922 - переписаны кнопки ИЗМ. fn_rename_Group и fn_rename_Component, удаление групп fn_delete_Group и fn_delete_Components, 
+        перемещения fn_remove_Group, fn_remove_Components, поиска fn_search
+        bag - при выделении в treeComponents def on_select_TreeComponents не появляется название в  self.ent_NameComponent
+        bag - fn_add_Components в пустой группе невозможно добавить компонент
+        todo - сделать проверку при добавлении группы или компонента на уникальность по полям - чтобы не было одниовых по названиям и полям групп или компоантнов
+
 020922 - переделка функции тображения иерархического списка viewTreeComponents в sql запросы и и заполненее TreeVieew
 
 010922 - переделка функции тображения иерархического списка viewTreeGroup в sql запросы и и заполненее TreeVieew
