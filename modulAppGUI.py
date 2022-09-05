@@ -290,19 +290,21 @@ def viewTreeComponents(treeComp:ttk.Treeview, id_parent: int) -> None:
         # cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC, DBU WHERE DBU.id = DBC.id_unit AND DBC.id_parent=? ;""", (id_parent,))
         rows_from_DBС = cursorDB.fetchall()
 
-        # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
-        for item_tupple in rows_from_DBС:
-            stringDF = {}
-            stringDF = { k:v for k,v in zip (column_names,item_tupple )}
-            # print(stringDF)    # {'id': 1, 'name': 'Склад'}
-            if stringDF['id_parent'] ==0: 
-                index_code_parent=''
-            else:
-                index_code_parent = str(stringDF['id_parent'])
-            treeComp.insert('', 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], stringDF['amount'], stringDF['name_unit'], stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_parent'], 0])
-
     if(connectionDBFile):
             connectionDBFile.close()
+
+        # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
+    for item_tupple in rows_from_DBС:
+        stringDF = {}
+        stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+        # print(stringDF)    # {'id': 1, 'name': 'Склад'}
+        if stringDF['id_parent'] ==0: 
+            index_code_parent=''
+        else:
+            index_code_parent = str(stringDF['id_parent'])
+        treeComp.insert('', 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], stringDF['amount'], stringDF['name_unit'], stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_parent'], 0])
+
+    
     return None
 
 def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame) -> None: 

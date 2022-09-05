@@ -245,11 +245,12 @@ columns_DBI = [
 
 # КАКИЕ и в каком ПОРЯДКЕ столбцы должны отображаться в дереве таблицы в окне "приход компонентов"
 displayColumnsI=['id_code_e','date', 'name', 'amount', 'code_units', 'dist', 'comments']#, 'id_code_item', 'id_code_parent']
+# displayColumnsI=['id_e','date', 'name', 'amount', 'units', 'dist', 'comments']#, 'id_code_item', 'id_code_parent']
 
 # настройка ширины столбцов в окне/таблице "приход компонентов" - размер в пикселях
-widthColunmsTreeWindowExpenditure = {
+widthColunmsTreeWindowIncome = {
             'id_code_e': [60], 
-            'date':[80], 
+            'date':[100], 
             'id_code_item': [60],                 
             'name': [400],                        
             'amount':[50],  
@@ -258,6 +259,7 @@ widthColunmsTreeWindowExpenditure = {
             # 'id_code_parent':[60],
             'comments':[400]                       
             }
+
 
 demo_DBI_1 = {
             'id_code_e':     ['7001',         '7002',          '7003'], 
@@ -308,9 +310,9 @@ columns_DBE = [
 displayColumnsE=['id_code_e','date', 'name', 'amount', 'code_units', 'dist', 'comments']#, 'id_code_item', 'id_code_parent']
 
 # настройка ширины столбцов в окне/таблице "расход компонентов" - размер в пикселях
-widthColunmsTreeWindowIncome = {
+widthColunmsTreeWindowExpenditure = {
             'id_code_e': [60], 
-            'date':[80], 
+            'date':[100], 
             'id_code_item': [60],                 
             'name': [400],                        
             'amount':[50],  

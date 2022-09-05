@@ -34,11 +34,10 @@ sql_create_table_DBC = """ CREATE TABLE IF NOT EXISTS DBC (
         name_1C TEXT,
         id_parent INTEGER,
         id_lvl INTEGER,
-        FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT
+        FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT,
+        FOREIGN KEY (id_parent)  REFERENCES DBG (id) ON DELETE RESTRICT
         );
         """
-
-
 
 sql_create_table_DBU = """ CREATE TABLE IF NOT EXISTS DBU (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
