@@ -161,11 +161,11 @@ class WindowExpenditure(tk.Toplevel):
         
 
         if modeWindow == 'expenditure': 
-            self.btn_Cansel = tk.Button(master=self, height=3, text="Запись РАСХОДА", command=self.saveExpenditure)
+            self.btn_In = tk.Button(master=self, height=3, text="Запись РАСХОДА", command=self.saveExpenditure)
         if modeWindow == 'income': 
-            self.btn_Cansel = tk.Button(master=self, height=3, text="Запись ПРИХОДА", command=self.saveIncome)
+            self.btn_In = tk.Button(master=self, height=3, text="Запись ПРИХОДА", command=self.saveIncome)
+        self.btn_In.grid(row=3, column=0, **opts)
         
-        self.btn_Cansel.grid(row=3, column=0, **opts)
         self.btn_Cansel = tk.Button(master=self, height=3, text="Отмена", command=self.destroy)
         self.btn_Cansel.grid(row=3, column=1, **opts)
 
@@ -188,60 +188,26 @@ class WindowExpenditure(tk.Toplevel):
         connectionDBFile = sql3.connect(scfg.DBSqlite)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile:
-            # вычисли максимальное значение id в таблице DBI
-            cursorDB.execute("""SELECT MAX(id) FROM DBI;""")
-            maxxx3 = cursorDB.fetchone()
-            maxx2 = maxxx3[0]
-
-             # получим названия столбцов БД
-            cursorDB.execute('PRAGMA table_info("DBI")')
-            column_names = [i[1] for i in cursorDB.fetchall()]
-            # column_names.append('name_component')
-            # print(column_names)
-            # ['id', 'date', 'id_component', 'amount', 'comments', 'name_component']
-
-            for item_row in range (1, maxx2+1, 1):
-
-                # вытащим строку - получим из DBI у которых id=item_row и приклеим название компонента
-                # cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.id_parent=? ;""", (id_parent,))
-                cursorDB.execute("""SELECT DBI.*, DBC.name FROM DBI JOIN DBC ON DBC.id = DBI.id_component WHERE DBI.id=? ;""", (item_row,))
-                # cursorDB.execute("""SELECT DBC.name, DBC.amount, DBU.name FROM DBC, DBU WHERE DBU.id = DBC.id_unit ;""")#, (id_parent,))
-                # cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC, DBU WHERE DBU.id = DBC.id_unit AND DBC.id_parent=? ;""", (id_parent,))
-                row_from_DBI = cursorDB.fetchone()
-                # print (row_from_DBI)
-                # (1, '1999-12-01 22:01:15', 1, 1, 'из ЧипиДипа счет 2345 от 1999-11-01', 'К155ЛА3')
-                stringDF = {}
-                stringDF = { k:v for k,v in zip (column_names,row_from_DBI )}
-                stringDF['name_component'] = row_from_DBI[5]
-                # print (stringDF)
-                # 
-
+            cursorDB.execute("""SELECT DBI.*, DBC.name FROM DBI JOIN DBC ON DBC.id = DBI.id_component;""")
+            rows_from_DBI = cursorDB.fetchall()    
+            for item_row in rows_from_DBI:
+                id_DBI, date, id_component, amount, comments, name_component = item_row 
                 # вытащим строку - получим из DBC у которых DBC.name=stringDF['name_component'] и приклеим название ед измерения
-                cursorDB.execute("""SELECT DBC.*, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.name=? ;""", (stringDF['name_component'],))
-                row_from_DBC = cursorDB.fetchone()
-                # print (row_from_DBC)
-                # (1, 'К155ЛА3', 15, 1, 10, 'К155ЛА3', '00101217551', 'nК155ЛА3', 14, 0, 'шт')
-                stringDF['id_parent'] = row_from_DBC[8]
-                stringDF['name_unit'] = row_from_DBC[10]
-                # print (stringDF)
-                # 
-
+                cursorDB.execute("""SELECT DBC.id_parent, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.name=? ;""", (name_component,))
+                id_parent_DBC, name_unit = cursorDB.fetchone()
                 # вытащим строку - получим из DBG название группы:  у которых DBG.id=stringDF['id_parent']
-                cursorDB.execute("""SELECT * FROM DBG WHERE DBG.id=? ;""", (stringDF['id_parent'],))
-                row_from_DBG = cursorDB.fetchone()
-                stringDF['name_parent'] = row_from_DBG[1]
-                # print (stringDF)
-
+                cursorDB.execute("""SELECT id,name,id_parent FROM DBG WHERE id=? ;""", (id_parent_DBC,))
+                id_DBG, name_DBG, id_parent_DBG = cursorDB.fetchone()
                 # построим полную строку пути по иерархии групп
-                while row_from_DBG[0] != 1:
+                string_path = name_DBG
+                id_next_DBG = id_parent_DBG
+                while id_DBG !=1:
                     # вытащим строку - получим из DBG название родителя:  у которых DBG.id=row_from_DBG[2]
-                    cursorDB.execute("""SELECT * FROM DBG WHERE DBG.id=? ;""", (row_from_DBG[2],))
-                    row_from_DBG = cursorDB.fetchone()
-                    stringDF['name_parent'] = row_from_DBG[1] + '/' + stringDF['name_parent']
-                # 
-                treeF.insert('', 'end',  stringDF['id'], text=stringDF['name_component'], values=[stringDF['id'], stringDF['date'], stringDF['name_component'], stringDF['amount'], stringDF['name_unit'], stringDF['name_parent'], stringDF['comments']])
-                # treeF.insert('', 'end',  id_code_e, text=ComponentName, values=[stringDF['id_code_e'],stringDF['date'], ComponentName, stringDF['amount'], UnitsName, ValuePathDistanation, stringDF['comments']])
-           
+                    cursorDB.execute("""SELECT * FROM DBG WHERE DBG.id=? ;""", (id_next_DBG,))
+                    id_DBG, name_parent, id_next_DBG = cursorDB.fetchone()
+                    string_path = name_parent + '/' + string_path
+                
+                treeF.insert('', 'end',  id_DBI, text=name_component, values=[id_DBI, date, name_component, amount, name_unit, string_path, comments])
 
         if(connectionDBFile):
             connectionDBFile.close()
@@ -296,35 +262,57 @@ class WindowExpenditure(tk.Toplevel):
         wec = meGUI.WindowEditComponent(self, modeWindow='expenditure', viewDB='DBC')
         id_item_comp = wec.open()
         if (id_item_comp !=0) | (id_item_comp !=''):
-            nameComp = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['name']
-            # t= nameComp.item()
-            self.name_DBEI.set(nameComp.item())
-            self.id_code_item_DBEI =  id_item_comp
-            UnitsCode = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['code_units'].item()
-            self.UnitName.set(scfg.UnitsCodeName[UnitsCode])
+            connectionDBFile = sql3.connect(scfg.DBSqlite)
+            cursorDB = connectionDBFile.cursor()
+            with connectionDBFile:
+                cursorDB.execute("""SELECT DBC.name, DBC.id_parent, DBU.name FROM DBC JOIN DBU ON DBU.id = DBC.id_unit WHERE DBC.id=?;""", (int(id_item_comp),))
+                row_from_DBC = cursorDB.fetchall()[0]
+                self.name_DBEI.set(row_from_DBC[0])
+                self.UnitName.set(row_from_DBC[2])
 
-            # в режиме "прихода" в поле "путь" будем автоматически показывать путь нахождения компонента в группах БД компоненты
-            if modeWindow == 'income':
-                id_item_group = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['id_code_parent'].item()
-                self.idCodeDistanation = id_item_group
-                if id_item_group !=0:
-                    # найдем имя родителя и код дедушки родителя
-                    nameGroup = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_group]['name']
-                    id_code_parent_parent = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_group]['id_code_parent']
-                    ValuePathDistanation= nameGroup.item()
-                    # id_code_parent = scfg.df_DB_Specification[scfg.df_DB_Specification['id_code_item']==id_item_group]['id_code_parent']
-                    # id_code_parent = scfg.df_DB_Specification[scfg.df_DB_Specification['id_code_e']==id_item_group]['id_code_parent']
-                    while (id_code_parent_parent.item() != '10000'):
-                        id_item = id_code_parent_parent.item()
-                        nextNameGroup = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item]['name']
-                        a= nextNameGroup.item()
-                        ValuePathDistanation = a + '/' + ValuePathDistanation
-                        #  перейдем к слудущему родителю
-                        id_code_parent_parent = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item]['id_code_parent']
+                # вытащим строку - получим из DBG название группы:  у которых DBG.id=stringDF['id_parent']
+                cursorDB.execute("""SELECT * FROM DBG WHERE DBG.id=? ;""", (row_from_DBC[1],))
+                row_from_DBG = cursorDB.fetchone()
+                ValuePathDistanation = row_from_DBG[1]
+                # print (stringDF)
 
+                # построим полную строку пути по иерархии групп
+                while row_from_DBG[0] != 1:
+                    # вытащим строку - получим из DBG название родителя:  у которых DBG.id=row_from_DBG[2]
+                    cursorDB.execute("""SELECT * FROM DBG WHERE DBG.id=? ;""", (row_from_DBG[2],))
+                    row_from_DBG = cursorDB.fetchone()
+                    ValuePathDistanation = row_from_DBG[1] + '/' + ValuePathDistanation
                 self.PathDistanation.set(ValuePathDistanation)
-        return None
+            if(connectionDBFile):
+                connectionDBFile.close()
+            # nameComp = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['name']
+            # # t= nameComp.item()
+            # self.name_DBEI.set(nameComp.item())
+            # self.id_code_item_DBEI =  id_item_comp
+            # UnitsCode = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['code_units'].item()
+            # self.UnitName.set(scfg.UnitsCodeName[UnitsCode])
 
+            # # в режиме "прихода" в поле "путь" будем автоматически показывать путь нахождения компонента в группах БД компоненты
+            # if modeWindow == 'income':
+            #     id_item_group = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_comp]['id_code_parent'].item()
+            #     self.idCodeDistanation = id_item_group
+            #     if id_item_group !=0:
+            #         # найдем имя родителя и код дедушки родителя
+            #         nameGroup = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_group]['name']
+            #         id_code_parent_parent = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item_group]['id_code_parent']
+            #         ValuePathDistanation= nameGroup.item()
+            #         # id_code_parent = scfg.df_DB_Specification[scfg.df_DB_Specification['id_code_item']==id_item_group]['id_code_parent']
+            #         # id_code_parent = scfg.df_DB_Specification[scfg.df_DB_Specification['id_code_e']==id_item_group]['id_code_parent']
+            #         while (id_code_parent_parent.item() != '10000'):
+            #             id_item = id_code_parent_parent.item()
+            #             nextNameGroup = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item]['name']
+            #             a= nextNameGroup.item()
+            #             ValuePathDistanation = a + '/' + ValuePathDistanation
+            #             #  перейдем к слудущему родителю
+            #             id_code_parent_parent = scfg.df_DBC[scfg.df_DBC['id_code_item']==id_item]['id_code_parent']
+
+            #     self.PathDistanation.set(ValuePathDistanation)
+        return None
 
     def click_Ent_PathDistanation(self, event):
         """
@@ -368,39 +356,62 @@ class WindowExpenditure(tk.Toplevel):
             # print(self.PathDistanation.get())
         return None
 
-
     def saveIncome (self):
         """
         запись данных окна/формы в БД прихода
         и в БД компонентов
         """
-        # создадим строку для БД прихода
-        # и сольем ее с БД прихода
-        new_row_DBI = {
-            'id_code_e': mdbc.getCode(),                    
-            'id_code_item': self.id_code_item_DBEI,                 
-            'name': self.name_DBEI.get(),                        
-            'amount':self.amount_DBEI.get(), 
-            'date':self.dateStringDBEI.get(),                        
-            'id_code_parent':self.idCodeDistanation,
-            # 'dist':self.PathDistanation.get(),
-            'comments':self.ent_commentsStringDBE.get()             
-            }
-        # пересоздадим добавление строки в DataFrame  как рекомендует Pandas 1.4.0. 22jan2022
-        df_new_row_DBI = pd.DataFrame(new_row_DBI, index=[0])
-        scfg.df_DBI = pd.concat([scfg.df_DBI, df_new_row_DBI])
-        #  переиндексируем DataFrame
-        scfg.df_DBI = scfg.df_DBI.reset_index(drop=True)
-        self.viewTreeI(treeF=self.treeF)#, DataFrameTree=scfg.df_DBI)
+        amount = int(self.amount_DBEI.get())
+        if amount >= 0 :
+            connectionDB = sql3.connect(scfg.DBSqlite)
+            cursorDB = connectionDB.cursor()
+            with connectionDB:
 
-        # изменим строку БД компонентов - количество , т.к. идет приход
-        # больше ничего менять в этой форме нельзя
-        df2 = scfg.df_DBC[scfg.df_DBC['id_code_item'] == self.id_code_item_DBEI]['amount']
-        amount_income = int(df2.item())
-        indx = df2.index[0]
-        amount_income += int(self.amount_DBEI.get())
-        df3 = scfg.df_DBC
-        scfg.df_DBC['amount'][indx]  = str(amount_income)
+                # создадим строку для БД прихода
+                # вспомним id_component по полю name формы
+                cursorDB.execute("""SELECT DBC.id, DBC.amount FROM DBC WHERE DBC.name=? ;""", (self.name_DBEI.get(),))
+                row_from_DBC = cursorDB.fetchone()
+                if row_from_DBC[0] >0:
+                    # (date, id_component, amount, comments)
+                    data_list_in_DBI = (
+                        # self.dateStringDBEI.get(),         
+                        row_from_DBC[0],
+                        amount,  
+                        self.ent_commentsStringDBE.get()
+                    )
+                    cursorDB.execute("""INSERT INTO DBI (date, id_component, amount, comments) VALUES (datetime('now'),?,?,?);""", data_list_in_DBI)
+                    connectionDB.commit()
+                    cursorDB.execute("""UPDATE DBC SET amount = ? WHERE id = ?;""", (row_from_DBC[1]+ int(self.amount_DBEI.get()), row_from_DBC[0] ))
+            if (connectionDB):
+                connectionDB.close()
+            self.viewTreeI(treeF=self.treeF)
+        
+        # # и сольем ее с БД прихода
+        # new_row_DBI = {
+        #     'id_code_e': mdbc.getCode(),                    
+        #     'id_code_item': self.id_code_item_DBEI,                 
+        #     'name': self.name_DBEI.get(),                        
+        #     'amount':self.amount_DBEI.get(), 
+        #     'date':self.dateStringDBEI.get(),                        
+        #     'id_code_parent':self.idCodeDistanation,
+        #     # 'dist':self.PathDistanation.get(),
+        #     'comments':self.ent_commentsStringDBE.get()             
+        #     }
+        # # пересоздадим добавление строки в DataFrame  как рекомендует Pandas 1.4.0. 22jan2022
+        # df_new_row_DBI = pd.DataFrame(new_row_DBI, index=[0])
+        # scfg.df_DBI = pd.concat([scfg.df_DBI, df_new_row_DBI])
+        # #  переиндексируем DataFrame
+        # scfg.df_DBI = scfg.df_DBI.reset_index(drop=True)
+        # self.viewTreeI(treeF=self.treeF)#, DataFrameTree=scfg.df_DBI)
+
+        # # изменим строку БД компонентов - количество , т.к. идет приход
+        # # больше ничего менять в этой форме нельзя
+        # df2 = scfg.df_DBC[scfg.df_DBC['id_code_item'] == self.id_code_item_DBEI]['amount']
+        # amount_income = int(df2.item())
+        # indx = df2.index[0]
+        # amount_income += int(self.amount_DBEI.get())
+        # df3 = scfg.df_DBC
+        # scfg.df_DBC['amount'][indx]  = str(amount_income)
    
         return None
 

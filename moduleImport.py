@@ -75,14 +75,14 @@ class Window_Import_OR_Remove(tk.Toplevel):
         if viewDB == 'DBC':   dataFrame_in = scfg.df_DBC
         elif viewDB == 'DBS': dataFrame_in = scfg.df_DBS
         if not(dataFrame_in.empty):
-            mag.viewTreeGroup(self.treeGroup)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
+            mag.viewTreeGroupDBGC(self.treeGroup)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
         return None
 
     def press_Button_Import(self, viewWindow):
         if viewWindow == 'DBC':   dataFrame_in = scfg.df_DBC
         elif viewWindow == 'DBS': dataFrame_in = scfg.df_DBS
         Load_DBGroup_From_XLS_pandas(scfg.nameFile_importDBC_excel)
-        mag.viewTreeGroup(self.treeGroup)       # отобразим данные из памяти DBGroup в Tree
+        mag.viewTreeGroupDBGC(self.treeGroup)       # отобразим данные из памяти DBGroup в Tree
         return None
 
     def open(self):

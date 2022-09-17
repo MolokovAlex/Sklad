@@ -6,12 +6,65 @@
 # модуль держатель функций работы с SQLite
 
 
+from logging import exception
 from sys import getsizeof
 import sqlite3 as sql3
 import traceback
 import sys
 import moduleDBClass as mdbc
 import skladConfig as scfg
+
+# --------------- БД групп для списка всех спецификаций DataBaseGroupSpecification --------------------------
+# ------ это есть список всех спецификаций 
+# id - уникальный номер спецификации
+# name - название спецификации
+# id_parent - резервное поле 
+
+sql_create_table_DBGS = """ CREATE TABLE IF NOT EXISTS DBGS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL CHECK(name !=''),
+        id_parent INTEGER
+        );
+        """
+
+# --------------- БД списка всех спецификаций DataBaseListSpecification --------------------------
+# ------ это есть список всех спецификаций 
+# id - уникальный номер спецификации
+# name - название спецификации
+# id_parent - номер в списке групп типов спецификаций в DBGS 
+
+sql_create_table_DBLS = """ CREATE TABLE IF NOT EXISTS DBLS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL CHECK(name !=''),
+        id_parent_dbgs INTEGER, 
+        FOREIGN KEY (id_parent_dbgs) REFERENCES DBGS (id) ON DELETE RESTRICT
+        );
+        """
+
+# --------------- БД спецификации --------------------------
+# id - уникальны номер строки в спецификации
+# id_component - номер входящего компонента (ЭРЭ) по DBC
+# id_specification - номер входящей спецификации по DBS (список смежности)
+# flag_case_DB - флаг, показывающий что в данной строке спецификации содержиться: 
+#                                           компонент из DBC или спецификация из DBS
+# id_dbls - номер названия спецификации по списку DBGS (в какую спецификацию входит срока)
+#
+
+sql_create_table_DBS = """ CREATE TABLE IF NOT EXISTS DBS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_dbls INTEGER,
+        id_component INTEGER ,
+        id_specification INTEGER,
+        flag_case_DB TEXT NOT NULL CHECK(flag_case_DB !=''),
+        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount >= 0), 
+        id_unit INTEGER,
+        id_parent INTEGER,
+        id_lvl INTEGER,
+        comments TEXT,
+        FOREIGN KEY (id_unit)  REFERENCES DBU (id) ON DELETE RESTRICT
+        );
+        """
+
 
 # --------------- БД склада DBGroupComponent --------------------------
 # сделать список смежности
@@ -66,16 +119,7 @@ sql_create_table_DBE = """ CREATE TABLE IF NOT EXISTS DBE (
         );
         """
 
-sql_create_table_DBS = """ CREATE TABLE IF NOT EXISTS DBS (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_component INTEGER NOT NULL, 
-        amount INTEGER NOT NULL DEFAULT 0 CHECK(amount > 0), 
-        id_parent INTEGER,
-        id_lvl INTEGER,
-        comments TEXT,
-        FOREIGN KEY (id_component)  REFERENCES DBC (id) ON DELETE RESTRICT
-        );
-        """
+
 
 
 sql_delete_data_in_tableDBGroupComponent = 'DELETE FROM DBGroupComponent WHERE code_group > 0;'
@@ -163,6 +207,10 @@ def createTableDBFile():
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile:
+            cursorDB.execute(sql_create_table_DBGS)
+            connectionDBFile.commit()
+            # cursorDB.execute(sql_create_table_DBLS)
+            # connectionDBFile.commit()
             cursorDB.execute(sql_create_table_DBG)
             connectionDBFile.commit()
             cursorDB.execute(sql_create_table_DBC)
@@ -182,19 +230,54 @@ def createTableDBFile():
     finally:
         if(connectionDBFile):
             connectionDBFile.close()
-    # if FlagCreateTableDBf : 
-    #     fill_TableDBG_defaul_value()
-    #     fill_TableDBU_defaul_value()
-    #     fill_TableDBC_defaul_value()
-    #     fill_TableDBI_defaul_value()
-    #     fill_TableDBE_defaul_value()
+    if FlagCreateTableDBf :
+        fill_TableDBLS_demo_value() 
+        fill_TableDBGS_demo_value()
+        fill_TableDBG_demo_value()
+        fill_TableDBU_demo_value()
+        fill_TableDBC_demo_value()
+        fill_TableDBI_demo_value()
+        fill_TableDBE_demo_value()
     return FlagCreateTableDBf
 
-
-
-def fill_TableDBG_defaul_value():
+def fill_TableDBLS_demo_value():
     """
-    заполнение таблицы DBG значениями по умолчанию
+    заполнение таблицы DBLS демо-значениями
+    """
+    try:
+        connectDB = sql3.Connection(scfg.DBSqlite)
+        cursorDB = connectDB.cursor()
+        with connectDB:
+            cursorDB.executemany("""INSERT INTO DBLS(name, id_parent_dbgs) VALUES (?,?);""", scfg.data_list_demo_DBLS)
+            connectDB.commit()        
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
+    finally :
+        if connectDB:
+            connectDB.close()
+    return None
+
+def fill_TableDBGS_demo_value():
+    """
+    заполнение таблицы DBGS демо-значениями
+    """
+    try:
+        connectDB = sql3.connect(scfg.DBSqlite)
+        cursorDB = connectDB.cursor()
+        with connectDB:
+            cursorDB.executemany("""INSERT INTO DBGS (name, id_parent) VALUES (?,?);""", scfg.data_list_demo_DBGS)
+            connectDB.commit()
+    except sql3.Error as error_sql:
+        viewCodeError (error_sql)
+    finally:
+        if connectDB:
+            connectDB.close()
+    return None
+
+
+def fill_TableDBG_demo_value():
+    """
+    заполнение таблицы DBG демо-значениями
     """
     nameFile_DBf = scfg.DBSqlite
     insert_data_query = """INSERT INTO DBG 
@@ -207,7 +290,7 @@ def fill_TableDBG_defaul_value():
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
-            cursorDB.executemany(insert_data_query, scfg.data_list_default_DBG)
+            cursorDB.executemany(insert_data_query, scfg.data_list_demo_DBG)
             connectionDBFile.commit()
             Flag_fill_TableDBG_defaul_value = True
 
@@ -220,9 +303,9 @@ def fill_TableDBG_defaul_value():
     return Flag_fill_TableDBG_defaul_value
 
 
-def fill_TableDBU_defaul_value():
+def fill_TableDBU_demo_value():
     """
-    заполнение таблицы DBU значениями по умолчанию
+    заполнение таблицы DBU демо-значениями
     """
     nameFile_DBf = scfg.DBSqlite
     insert_data_query = """INSERT INTO DBU (name) VALUES (?);"""
@@ -235,7 +318,7 @@ def fill_TableDBU_defaul_value():
             # for item in data_list:
             #     cursorDB.execute(insert_data_query, item)
             #     connectionDBFile.commit()
-            cursorDB.executemany(insert_data_query, scfg.data_list_default_DBU)
+            cursorDB.executemany(insert_data_query, scfg.data_list_demo_DBU)
             connectionDBFile.commit()
             Flag_fill_TableDBU_defaul_value = True
 
@@ -248,9 +331,9 @@ def fill_TableDBU_defaul_value():
     return Flag_fill_TableDBU_defaul_value
 
 
-def fill_TableDBC_defaul_value():
+def fill_TableDBC_demo_value():
     """
-    заполнение таблицы DBC значениями по умолчанию
+    заполнение таблицы DBC демо-значениями
     """
     nameFile_DBf = scfg.DBSqlite
     insert_data_query = """INSERT INTO DBC (name, amount, id_unit, min_rezerve, articul_1C, code_1C, name_1C, id_parent, id_lvl) VALUES (?,?,?, ?,?,?, ?,?,?);"""
@@ -261,7 +344,7 @@ def fill_TableDBC_defaul_value():
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
-            cursorDB.executemany(insert_data_query, scfg.data_list_default_DBC)
+            cursorDB.executemany(insert_data_query, scfg.data_list_demo_DBC)
             connectionDBFile.commit()
             Flag_fill_TableDBC_defaul_value = True
 
@@ -274,9 +357,9 @@ def fill_TableDBC_defaul_value():
     return Flag_fill_TableDBC_defaul_value
 
 
-def fill_TableDBI_defaul_value():
+def fill_TableDBI_demo_value():
     """
-    заполнение таблицы DBI значениями по умолчанию
+    заполнение таблицы DBI демо-значениями
     """
     nameFile_DBf = scfg.DBSqlite
     insert_data_query = """INSERT INTO DBI (date, id_component, amount, comments) VALUES (?,?,?,?);"""
@@ -286,7 +369,7 @@ def fill_TableDBI_defaul_value():
         connectionDBFile = sql3.connect(nameFile_DBf)
         cursorDB = connectionDBFile.cursor()
         with connectionDBFile: 
-            cursorDB.executemany(insert_data_query, scfg.data_list_default_DBI)
+            cursorDB.executemany(insert_data_query, scfg.data_list_demo_DBI)
             connectionDBFile.commit()
             Flag_fill_TableDBI_defaul_value = True
 
@@ -298,9 +381,9 @@ def fill_TableDBI_defaul_value():
             connectionDBFile.close()
     return Flag_fill_TableDBI_defaul_value
 
-def fill_TableDBE_defaul_value():
+def fill_TableDBE_demo_value():
     """
-    заполнение таблицы DBI значениями по умолчанию
+    заполнение таблицы DBI демо-значениями
     """
     nameFile_DBf = scfg.DBSqlite
     insert_data_query = """INSERT INTO DBE (date, id_component, amount, comments) VALUES (?,?,?,?);"""

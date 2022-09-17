@@ -22,7 +22,7 @@ import moduleSQLite as msql
 import modulеIncomeExpenditureGUI as mieGUI
 import modulеEditGUI as meGUI
 import moduleExport as me
-# import moduleSpecification as ms
+import moduleSpecification as ms
 
 
 class App(tk.Tk):
@@ -154,8 +154,11 @@ class App(tk.Tk):
         # 'DBS' = DataBaseSpecification   
         # modeWindow = 'edit'
         # modeWindow = 'comp_in_spec'
-        wec = meGUI.WindowEditComponent(self, modeWindow = 'edit', viewWindow='DBS')
-        wec.grab_set()                      #  чтобы окно получало все события
+        # wec = meGUI.WindowEditComponent(self, modeWindow = 'edit', viewDB='DBS')
+        # wec.grab_set()                      #  чтобы окно получало все события
+        wior = ms.Window_Choice_Specification(self)
+        select = wior.open()
+        wes = ms.Window_Edit_Specification(self, id_select=select)
         self.text_box.insert(tk.END, "open_WindowEdit_Specification"+"\n")
         return None
 
@@ -329,7 +332,7 @@ def viewTreeGroupSpec(treeF:ttk.Treeview, DataFrameTree: pd.DataFrame) -> None:
                 treeF.insert(index_code_parent, 'end',  id_code_e, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'],  stringDF['id_code_parent'], stringDF['id_code_lvl']])
         
 
-def viewTreeGroup(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame): 
+def viewTreeGroupDBGC(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame): 
 
     stringDF = {}
     # очищаем дерево
@@ -348,9 +351,9 @@ def viewTreeGroup(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame):
         # maxx = maxxx[0]
 
         # вычисли максимальное значение id в таблице DBG
-        cursorDB.execute("""SELECT MAX(id) FROM DBG;""")
-        maxxx3 = cursorDB.fetchone()
-        maxx2 = maxxx3[0]
+        # cursorDB.execute("""SELECT MAX(id) FROM DBG;""")
+        # maxxx3 = cursorDB.fetchone()
+        # maxx2 = maxxx3[0]
 
         # получим названия столбцов БД
         cursorDB.execute('PRAGMA table_info("DBG")')
@@ -359,24 +362,25 @@ def viewTreeGroup(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame):
         # ['id', 'name', 'id_parent']
 
         # пройдемся по всем индексам БД и 
-        for item_id in range (1, maxx2+1, 1):
-            # вытащим строку - получим из DBG названия у которых id =item_id
-            cursorDB.execute("""SELECT * FROM DBG WHERE id=?;""", (item_id,))
-            row_from_DBG = cursorDB.fetchall()
+        # for item_id in range (1, maxx2+1, 1):
+        #     # вытащим строку - получим из DBG названия у которых id =item_id
+        #     cursorDB.execute("""SELECT * FROM DBG WHERE id=?;""", (item_id,))
+        #     row_from_DBG = cursorDB.fetchall()
             # print(row_from_DBG)    # [(1, 'Склад', 0)]
-            
-            if row_from_DBG:
+        cursorDB.execute("""SELECT * FROM DBG ORDER BY id_parent;""")
+        rows_from_DBG = cursorDB.fetchall()    
+            # if row_from_DBG:
                 # сделаем словарь {ключ_название_столбца_таблицы: содержимое_ячейки_столбца} и заполняем элемент дерева
-                for item_tupple in row_from_DBG:
-                    stringDF = {}
-                    stringDF = { k:v for k,v in zip (column_names,item_tupple )}
-                    # print(stringDF)    # {'id': 1, 'name': 'Склад'}
-                    if stringDF['id_parent'] ==0: 
-                        index_code_parent=''
-                    else:
-                        index_code_parent = str(stringDF['id_parent'])
-                    # treeF.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
-                    treeF.insert(index_code_parent, 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], 0, '', 0, '', '', '', stringDF['id_parent'], 0])
+        for item_tupple in rows_from_DBG:
+            stringDF = {}
+            stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+            # print(stringDF)    # {'id': 1, 'name': 'Склад'}
+            if stringDF['id_parent'] ==0: 
+                index_code_parent=''
+            else:
+                index_code_parent = str(stringDF['id_parent'])
+            # treeF.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
+            treeF.insert(index_code_parent, 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], 0, '', 0, '', '', '', stringDF['id_parent'], 0])
 
         # item_id_parent = 1
         # cursorDB.execute("""SELECT * FROM DBG WHERE id_parent=?;""", (item_id_parent,))
@@ -400,6 +404,39 @@ def viewTreeGroup(treeF:ttk.Treeview):#, DataFrameTree: pd.DataFrame):
 
     if(connectionDBFile):
             connectionDBFile.close()
+
+def viewTreeGroupDBGS(treeF:ttk.Treeview)-> None:
+    """
+    отображение таблицы DBGS в форме на компоненте Treeview
+    """ 
+    # очищаем дерево
+    for i in treeF.get_children(): treeF.delete(i)
+    
+    # заполним дерево TreeGroup названиями групп из DBGS
+    connectionDB = sql3.connect(scfg.DBSqlite)
+    cursorDB = connectionDB.cursor()
+    with connectionDB: 
+        cursorDB.execute("""SELECT * FROM DBGS ORDER BY id_parent;""")
+        rows_from_DBGS = cursorDB.fetchall()    
+            # if row_from_DBG:
+        for item_tupple in rows_from_DBGS:
+            id, name, id_parent = item_tupple
+            if id_parent == 0: index_code_parent=''
+            else: index_code_parent = id_parent
+            # stringDF = {}
+            # stringDF = { k:v for k,v in zip (column_names,item_tupple )}
+            # print(stringDF)    # {'id': 1, 'name': 'Склад'}
+            # if stringDF['id_parent'] ==0: 
+            #     index_code_parent=''
+            # else:
+            #     index_code_parent = str(stringDF['id_parent'])
+            # treeF.insert(index_code_parent, 'end',  id_code_item, text=stringDF['name'], values=[stringDF['id_code_item'], stringDF['amount'], UnitsName, stringDF['min_rezerve'], stringDF['articul_1C'], stringDF['code_1C'], stringDF['name_1C'], stringDF['id_code_parent'], stringDF['id_code_lvl']])
+            # treeF.insert(index_code_parent, 'end',  stringDF['id'], text=stringDF['name'], values=[stringDF['id'], 0, '', 0, '', '', '', stringDF['id_parent'], 0])
+            treeF.insert(index_code_parent, 'end',  id, text=name, values=[id, 0, '', 0, '', '', '', id_parent, 0])
+
+    if(connectionDB):
+            connectionDB.close()
+
 
 
 
@@ -452,6 +489,9 @@ def Setting_TreeView(treeF:ttk.Treeview, form):
         treeF.column('#0', width=200,stretch=tk.YES)
     elif form == 'full':
         treeF["displaycolumns"]=scfg.displayColumnsFull
+        treeF.column('#0', width=400,stretch=tk.YES)
+    elif form =="choice_specification":
+        treeF["displaycolumns"]=scfg.displayColumnsShort
         treeF.column('#0', width=400,stretch=tk.YES)
     else :
         treeF["displaycolumns"]=scfg.displayColumnsE

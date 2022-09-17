@@ -72,15 +72,20 @@ class WindowEditComponent(tk.Toplevel):
         self.selection_item_Group = 0
         # DBC = DataBaseComponents   
         # DBS = DataBaseSpecification   
-        if viewDB == 'DBC':   dataFrame_in = scfg.df_DBC
-        elif (viewDB == 'DBS') and (modeWindow == 'edit'): dataFrame_in = scfg.df_DBS   
-        elif (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): dataFrame_in = scfg.df_DBC   
-        mag.viewTreeGroup(self.treeGroup)       # отобразим данные из памяти DataFrame в TreeGroup с родителями
+        # if viewDB == 'DBC':   dataFrame_in = scfg.df_DBC
+        # elif (viewDB == 'DBS') and (modeWindow == 'edit'): dataFrame_in = scfg.df_DBS   
+        # elif (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): dataFrame_in = scfg.df_DBC 
+        #   
+        # отобразим данные в TreeGroup с родителями
+        if  viewDB == 'DBC':
+            mag.viewTreeGroupDBGC(self.treeGroup)       
+        elif viewDB == 'DBS':
+            mag.viewTreeGroupDBGS(self.treeGroup)
 
         return None   
 
     def create_frame_search(self, viewDB, modeWindow, opts):
-        self.frame_search = tk.LabelFrame (master=self, text="Поиск", relief=tk.SUNKEN, borderwidth=3, height=10)
+        self.frame_search = tk.LabelFrame (master=self, text="Поиск", relief=tk.SUNKEN, borderwidth=3, height=10, background= 'green')
         self.frame_search.grid(row=0, column=0, columnspan=4, **opts)
         self.ent_search = tk.Entry(master=self.frame_search )
         self.btn_search = tk.Button(master=self.frame_search, text="Искать", command=lambda modeWindow=modeWindow, viewDB = viewDB: self.fn_search(modeWindow = modeWindow, viewDB = viewDB))
@@ -94,14 +99,14 @@ class WindowEditComponent(tk.Toplevel):
         return None
 
     def create_frame_NameComponent(self, viewDB, modeWindow, opts):
-        self.frame_NameComponent = tk.LabelFrame(master=self, text="Наименование", relief=tk.SUNKEN, borderwidth=3, height=10)
+        self.frame_NameComponent = tk.LabelFrame(master=self, text="Наименование", relief=tk.SUNKEN, borderwidth=3, height=10, background= 'orange')
         self.frame_NameComponent.grid(row=1, column=0, columnspan=4, **opts)
         self.ent_NameComponent = tk.Entry(master=self.frame_NameComponent)
         self.ent_NameComponent.pack(fill=tk.X, expand=1, side=tk.LEFT, ipadx=5, ipady=5)
         return None
 
     def create_frame_Dimension(self, viewDB, modeWindow, opts):
-        self.frame_Dimension = tk.LabelFrame(master=self, text="Единица измерения", relief=tk.SUNKEN, borderwidth=3, height=10, width= 80)
+        self.frame_Dimension = tk.LabelFrame(master=self, text="Единица измерения", relief=tk.SUNKEN, borderwidth=3, height=10, width= 80, background= 'white')
         self.frame_Dimension.grid(row=2, column=0, **opts)
         self.lbl_name_units = tk.Label(master=self.frame_Dimension, text="Ед измерения:") 
         # self.CB_name_units = ttk.Combobox(self.frame_Dimension, values=list(scfg.UnitsCodeName.values()), textvariable = self.name_unit, width=5)
@@ -129,7 +134,7 @@ class WindowEditComponent(tk.Toplevel):
         return None
 
     def create_frame_treeGroup(self, viewDB, modeWindow, opts):
-        self.frame_TreeGroup = tk.LabelFrame(master=self, text="Группы", relief=tk.SUNKEN, borderwidth=3)  
+        self.frame_TreeGroup = tk.LabelFrame(master=self, text="Группы", relief=tk.SUNKEN, borderwidth=3, background= 'green')  
         self.frame_TreeGroup.grid(row=3, column=0, **opts)
         self.btn_RenameGroup = tk.Button(master=self.frame_TreeGroup, text="Изм\n груп", command=lambda m='group', vDB = viewDB: self.fn_rename_Group(mode = m, viewDB = vDB))
         self.btn_EditGroup = tk.Button(master=self.frame_TreeGroup, text="Доб\n  груп", command=lambda m='group', vDB = viewDB: self.fn_add_Group(mode = m, viewDB = vDB))
@@ -154,7 +159,7 @@ class WindowEditComponent(tk.Toplevel):
         return None
 
     def  create_frame_treeComponents(self, viewDB, modeWindow, opts):
-        self.frame_TreeComponents = tk.LabelFrame(master=self, text="Компоненты", relief=tk.SUNKEN, borderwidth=3)  
+        self.frame_TreeComponents = tk.LabelFrame(master=self, text="Компоненты", relief=tk.SUNKEN, borderwidth=3, background= 'yellow')  
         self.frame_TreeComponents.grid(row=3, column=1, columnspan=2,  **opts)
         # DBC = DataBaseComponents
         # DBS = DataBaseSpecification
@@ -167,12 +172,19 @@ class WindowEditComponent(tk.Toplevel):
             self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1)#, command=self.fn_choice_comp_in_expenditure)
             self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1,  command=self.clicked)
             self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1,  command=self.clicked)
-        elif (viewDB == 'DBS') and (modeWindow == 'edit'): 
-            self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Доб\n  в сп",command=lambda mW='comp_in_spec', vDB = viewDB: self.open_Window_Comp_in_Spec(modeWindow = mW, viewDB = vDB))
-        elif (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): 
-            self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Выбр",command=lambda mW='comp_in_spec', vDB = viewDB: self.fn_choice_comp_in_spec(modeWindow = mW, viewDB = vDB))
-            self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1, text="----", command=self.clicked)
-            self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1, text="----", command=self.clicked)
+            self.btn_DeleteComp = tk.Button(master=self.frame_TreeComponents, height=1,  command=self.clicked)
+        elif (viewDB == 'DBS') and (modeWindow == 'edit'):
+            self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Доб.",command=lambda mW='comp', vDB = viewDB: self.fn_add_Components(mode = mW, viewDB = vDB))
+            self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Изм.", command=lambda mW='comp', vDB = viewDB: self.fn_rename_Component(mode = mW, viewDB = vDB))
+            self.btn_DeleteComp = tk.Button(master=self.frame_TreeComponents, text="Удал", command=lambda mW='comp', vDB = viewDB: self.fn_delete_Components(mode = mW, viewDB = vDB))
+            self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Пере", command=lambda mW='comp', vDB = viewDB: self.fn_remove_Components(mode = mW, viewDB = vDB))
+            
+        # elif (viewDB == 'DBS') and (modeWindow == 'edit'): 
+        #     self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Доб\n  в сп",command=lambda mW='comp_in_spec', vDB = viewDB: self.open_Window_Comp_in_Spec(modeWindow = mW, viewDB = vDB))
+        # elif (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): 
+        #     self.btn_EditComp = tk.Button(master=self.frame_TreeComponents, height=1, text="Выбр",command=lambda mW='comp_in_spec', vDB = viewDB: self.fn_choice_comp_in_spec(modeWindow = mW, viewDB = vDB))
+        #     self.btn_RenameComp = tk.Button(master=self.frame_TreeComponents, height=1, text="----", command=self.clicked)
+        #     self.btn_RemoveComp = tk.Button(master=self.frame_TreeComponents, height=1, text="----", command=self.clicked)
         self.btn_RenameComp.grid(row=0, column=0, **opts)
         self.btn_EditComp.grid(row=1, column=0, **opts)
         self.btn_DeleteComp.grid(row=2, column=0, **opts)
@@ -325,7 +337,7 @@ class WindowEditComponent(tk.Toplevel):
         # self.ent_name_1C.insert(0, stringDF['name_1C'].item())
 
         # для поиска нужно при выделении в TreeComponents - обновлялось TreeGroup
-        mag.viewTreeGroup(self.treeGroup)# возьмем его родителя
+        mag.viewTreeGroupDBGC(self.treeGroup)# возьмем его родителя
         # id_code_parent = dataFrame_in[dataFrame_in['id_code_item'] == id_code_item]['id_code_parent'].item()
         # распахнуть TreeGroup на родителе выделенного элемента в TreeComponents
         self.treeGroup.see(stringDF['id_parent'])
@@ -345,7 +357,8 @@ class WindowEditComponent(tk.Toplevel):
         return None
 
     def fn_choice_comp_in_expenditure(self):
-        self.new_parent = self.tree2.selection()[0]
+        # self.new_parent = self.tree2.selection()[0]
+        self.new_parent = self.selection_item
         self.destroy()
         return None
 
@@ -380,7 +393,7 @@ class WindowEditComponent(tk.Toplevel):
         scfg.df_DBS = scfg.df_DBS.reset_index(drop=True)
         
         if (viewDB == 'DBS') and (modeWindow == 'comp_in_spec'): dataFrame_in = scfg.df_DBS
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(id_code_item_group)
         self.treeGroup.selection_set(id_code_item_group)
         # mag.viewTreeComponents(self.tree2, d_code_item_group)
@@ -493,7 +506,7 @@ class WindowEditComponent(tk.Toplevel):
                 if(connectionDBFile):
                     connectionDBFile.close()
             # и выводим его заново имитируя выбор TreeView родителя            
-            mag.viewTreeGroup(self.treeGroup)
+            mag.viewTreeGroupDBGC(self.treeGroup)
             self.treeGroup.see(new_id_code_parent)
             self.treeGroup.selection_set(new_id_code_parent)
             mag.viewTreeComponents(self.tree2, new_id_code_parent)
@@ -530,7 +543,7 @@ class WindowEditComponent(tk.Toplevel):
                     connectionDBFile.close()
             # и выводим его заново имитируя выбор TreeView родителя
             viewID =  new_id_code_parent
-            mag.viewTreeGroup(self.treeGroup)
+            mag.viewTreeGroupDBGC(self.treeGroup)
             self.treeGroup.see(viewID)
             self.treeGroup.selection_set(viewID)
             mag.viewTreeComponents(self.tree2, viewID)
@@ -605,7 +618,7 @@ class WindowEditComponent(tk.Toplevel):
         # и выводим его заново имитируя выбор TreeView родителя
         if mode == 'comp': viewID =  string_old_data['id_parent']
         elif mode == 'group': viewID =  id_code_item
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(viewID)
         self.treeGroup.selection_set(viewID)
         mag.viewTreeComponents(self.tree2, viewID)
@@ -672,7 +685,7 @@ class WindowEditComponent(tk.Toplevel):
         # и выводим его заново имитируя выбор TreeView родителя
         viewID =  string_old_data['id_parent']
         # elif mode == 'group': viewID =  id_code_item
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(viewID)
         self.treeGroup.selection_set(viewID)
         mag.viewTreeComponents(self.tree2, viewID)
@@ -708,7 +721,7 @@ class WindowEditComponent(tk.Toplevel):
                 connectionDBFile.close()
         # и выводим его заново имитируя выбор TreeView родителя
         viewID =  id_code_parent
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(viewID)
         self.treeGroup.selection_set(viewID)
         mag.viewTreeComponents(self.tree2, viewID)
@@ -773,7 +786,7 @@ class WindowEditComponent(tk.Toplevel):
                 connectionDBFile.close()
         # и выводим его заново имитируя выбор TreeView родителя
         viewID =  id_code_parent
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(viewID)
         self.treeGroup.selection_set(viewID)
         mag.viewTreeComponents(self.tree2, viewID)
@@ -890,7 +903,7 @@ class WindowEditComponent(tk.Toplevel):
         finally:
             if(connectionDBFile):
                 connectionDBFile.close()
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(id_code_parent)
         self.treeGroup.selection_set(id_code_parent)
         mag.viewTreeComponents(self.tree2, id_code_parent)
@@ -918,7 +931,7 @@ class WindowEditComponent(tk.Toplevel):
         finally:
             if(connectionDBFile):
                 connectionDBFile.close()
-        mag.viewTreeGroup(self.treeGroup)
+        mag.viewTreeGroupDBGC(self.treeGroup)
         self.treeGroup.see(id_code_parent)
         self.treeGroup.selection_set(id_code_parent)
         mag.viewTreeComponents(self.tree2, id_code_parent)
